@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+
+# Node / Next
+node_modules/
+.next/
+out/
+*.log
+
+# Env
+.env
+.env.local
+
+# Postgres
+pgdata/
+
+# OS / IDE
+.DS_Store
+.vscode/
+.idea/
