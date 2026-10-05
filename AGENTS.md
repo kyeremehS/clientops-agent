@@ -20,3 +20,5 @@
 - Branch per change after scaffold; no direct pushes to `main` except this initial scaffold.
 - Run `pytest backend/tests -q` before every backend commit.
 - Keep `docs/architecture.md` and `docs/decisions/` updated for structural choices.
+- Docs are just-in-time: update the corresponding doc in the same PR as code.
+- Track progress in `docs/roadmap.md` — check a box only when its done-when passes.
