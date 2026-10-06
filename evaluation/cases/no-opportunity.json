@@ -1,0 +1,27 @@
+{
+  "id": "no-opportunity",
+  "description": "Generic brochure site, no operational signals.",
+  "lead": {
+    "company": "Smith Bakery",
+    "website": "https://smith-bakery.test",
+    "contact": "hello@smith-bakery.test",
+    "message": "Just saying hi, love what you do."
+  },
+  "artifacts": [
+    {"id": "b1", "source_url": "https://smith-bakery.test/", "content": "Family bakery, menu and opening hours."},
+    {"id": "b2", "source_url": "https://smith-bakery.test/menu", "content": "Menu page with prices."}
+  ],
+  "claims": [
+    {"text": "Family bakery publishing menu and hours", "evidence_refs": ["b1"]}
+  ],
+  "qualification": {
+    "operational_pain": 1,
+    "automation_plausibility": 0,
+    "relevance": 1,
+    "evidence_quality": 2,
+    "supporting_evidence_ids": ["b1", "b2"],
+    "summary": "No supported automation opportunity."
+  },
+  "expected_decision": "REJECT",
+  "expected_grounded": true
+}

@@ -21,8 +21,8 @@ One brick at a time; docs just-in-time per box.
 - [x] B5 slack-audit — idempotent `chat.postMessage` to test `#sales-leads` + audit write
   - docs: `docs/tools.md`, `docs/deployment.md`, `docs/api.md` (execute endpoint)
   - done-when: retry + idempotency + audit-chain tests pass (mocked Slack)
-- [ ] B6 eval-slice1 — 3 cases in `evaluation/cases/` + `run.py` summary
-  - docs: `docs/evaluation.md`
+- [x] B6 eval-slice1 — 3 cases in `evaluation/cases/` + `run.py` summary
+  - docs: `docs/evaluation.md` (filled)
   - done-when: `python evaluation/run.py` reports 3/3 + 0 policy violations
 
-Slice 2 (not started): full replay, CRM/email, more sources.
+Slice 1 complete: D0, D1, B1–B6. Slice 2 (not started): full replay, CRM/email, more sources.
