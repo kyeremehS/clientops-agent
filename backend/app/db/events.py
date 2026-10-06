@@ -1,7 +1,7 @@
 """Audit-chain + approval-expiry helpers. Deterministic, no LLM calls."""
 
 import hashlib
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from uuid import UUID
 
 from sqlalchemy import select
@@ -18,8 +18,15 @@ def approval_expiry(requested_at: datetime) -> datetime:
     return requested_at + timedelta(hours=APPROVAL_TTL_HOURS)
 
 
+def _as_aware(moment: datetime) -> datetime:
+    """SQLite returns naive datetimes; Postgres returns aware. Normalize to UTC."""
+    if moment.tzinfo is None:
+        return moment.replace(tzinfo=timezone.utc)
+    return moment
+
+
 def is_approval_expired(expires_at: datetime, now: datetime | None = None) -> bool:
-    return (now or utcnow()) >= expires_at
+    return _as_aware(now or utcnow()) >= _as_aware(expires_at)
 
 
 def latest_event_id(session: Session, lead_id: UUID) -> UUID | None:

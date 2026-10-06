@@ -1,18 +1,27 @@
-# API (Slice 1 — shells)
+# API (Slice 1 — implemented in B4)
 
-Status: stub — schemas land in `feat/api-approvals-ui`. Pydantic is single source of truth.
+Status: accepted. Pydantic schemas in `backend/app/schemas/` are the contract.
 
 ## Endpoints
 
-- `GET /health` — implemented (scaffold).
-- `POST /leads` — create lead, start run. Deferred.
-- `GET /leads/{id}` — lead + research + qualification + decision. Deferred.
-- `POST /approvals/{id}/approve` — approve if pending + not expired + correct run state.
-  Late → `409 approval_expired`. Deferred.
-- `POST /approvals/{id}/reject` — human reject. Deferred.
+- `GET /health` → `{"status":"ok"}`.
+- `POST /leads` (201) — create lead from `{company, website, contact, message}`,
+  emits `run.created`. Returns `LeadRead`.
+- `GET /leads/{id}` — lead detail. Unknown → `404 lead_not_found`.
+- `POST /leads/{id}/approvals` (201) — request approval for a lead.
+  Emits `approval.requested`. Second pending (or post-approved) request → `409 wrong_state`.
+- `GET /approvals/pending` — approvals queue for the frontend, oldest first.
+- `POST /approvals/{id}/approve` — human approve. Re-validates: exists (`404`),
+  still `pending` (`409 wrong_state`), not expired. Late → marks approval
+  `expired`, emits `approval.expired`, returns `409 approval_expired`.
+  Success emits `approval.approved` with `actor="human"`.
+- `POST /approvals/{id}/reject` — same guards; success emits `approval.rejected`.
 
 ## Error behaviour
 
-- `409 approval_expired` when approving after `expires_at`.
-- `409 wrong_state` when run is not in `review_pending`.
-- `404` for unknown lead/approval. Validation errors are Pydantic `422`.
+- `404 lead_not_found` / `404 approval_not_found`.
+- `409 wrong_state` — approval already decided, or duplicate request.
+- `409 approval_expired` — past `expires_at`; approval is terminally `expired`.
+- Pydantic validation failures → `422`.
+
+Research/qualification/decision endpoints land with the orchestrator (later brick).

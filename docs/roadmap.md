@@ -15,9 +15,9 @@ One brick at a time; docs just-in-time per box.
 - [x] B3 scoring-policy — pure `score(dims)` + `decide(...)` + unit tests
   - docs: `docs/policy.md` (already locked; no change needed)
   - done-when: `eq<=1→REVIEW`, `count<2→REVIEW`, `score<40→REJECT` tests pass
-- [ ] B4 api-approvals-ui — endpoints + re-validation + minimal Next.js queue
-  - docs: `docs/api.md`, `docs/workflow.md`
-  - done-when: approve/reject happy + expired/late-approve `409` paths tested
+- [x] B4 api-approvals-ui — endpoints + re-validation + minimal Next.js queue
+  - docs: `docs/api.md` (filled)
+  - done-when: approve/reject happy + expired/late-approve `409` paths tested, `pnpm build` passes
 - [ ] B5 slack-audit — idempotent `chat.postMessage` to test `#sales-leads` + audit write
   - docs: `docs/tools.md`, `docs/deployment.md`
   - done-when: retry + idempotency + audit-chain tests pass (mocked Slack)
