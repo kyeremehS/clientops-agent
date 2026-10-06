@@ -12,6 +12,10 @@ class Settings(BaseSettings):
     llm_timeout_s: float = 30.0
     llm_max_retries: int = 3
     llm_max_tokens: int = 2000
+    slack_bot_token: str = ""
+    slack_channel_id: str = ""
+    slack_timeout_s: float = 15.0
+    slack_max_retries: int = 3
 
     model_config = {"env_prefix": "", "env_file": ".env", "extra": "ignore"}
 

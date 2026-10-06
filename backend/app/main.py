@@ -4,6 +4,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 
+from app.api.actions import router as actions_router
 from app.api.leads import router as leads_router
 from app.config import settings
 from app.db.base import Base, get_engine
@@ -18,6 +19,7 @@ async def lifespan(_: FastAPI):
 
 app = FastAPI(title="clientops-agent", lifespan=lifespan)
 app.include_router(leads_router)
+app.include_router(actions_router)
 
 
 @app.get("/health")

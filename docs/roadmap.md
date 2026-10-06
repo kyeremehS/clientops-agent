@@ -18,8 +18,8 @@ One brick at a time; docs just-in-time per box.
 - [x] B4 api-approvals-ui — endpoints + re-validation + minimal Next.js queue
   - docs: `docs/api.md` (filled)
   - done-when: approve/reject happy + expired/late-approve `409` paths tested, `pnpm build` passes
-- [ ] B5 slack-audit — idempotent `chat.postMessage` to test `#sales-leads` + audit write
-  - docs: `docs/tools.md`, `docs/deployment.md`
+- [x] B5 slack-audit — idempotent `chat.postMessage` to test `#sales-leads` + audit write
+  - docs: `docs/tools.md`, `docs/deployment.md`, `docs/api.md` (execute endpoint)
   - done-when: retry + idempotency + audit-chain tests pass (mocked Slack)
 - [ ] B6 eval-slice1 — 3 cases in `evaluation/cases/` + `run.py` summary
   - docs: `docs/evaluation.md`
