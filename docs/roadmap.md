@@ -9,9 +9,9 @@ One brick at a time; docs just-in-time per box.
 - [x] B1 db-events — SQLAlchemy models + audit event chain + approval expiry
   - docs: `docs/data-model.md`, `docs/decisions/0004-sqlalchemy-2.0-pure-python.md`
   - done-when: `python -m pytest backend/tests -q` incl. event-chain + expiry tests
-- [ ] B2 llm-openrouter — OpenRouter client, pinned `qwen/qwen3.8-27b:free`, JSON-schema → Pydantic
-  - docs: `docs/agents.md`
-  - done-when: structured-output validation test passes (or model re-pinned with ADR)
+- [x] B2 llm-openrouter — OpenRouter client, pinned `qwen/qwen3.8-27b:free`, JSON-schema → Pydantic
+  - docs: `docs/agents.md`, `docs/decisions/0005-agents-honestly-guidance.md`
+  - done-when: mocked guardrail tests pass; live structured-output check runs with key
 - [ ] B3 scoring-policy — pure `score(dims)` + `decide(...)` + unit tests
   - docs: `docs/policy.md`
   - done-when: `eq<=1→REVIEW`, `count<2→REVIEW`, `score<40→REJECT`, expiry `409` tests pass
