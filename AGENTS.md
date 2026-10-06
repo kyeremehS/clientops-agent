@@ -18,6 +18,7 @@
 ## Workflow
 
 - Branch per change after scaffold; no direct pushes to `main` except this initial scaffold.
+- Always merge the branch to `main` and delete it locally + on origin after merge.
 - Run `pytest backend/tests -q` before every backend commit.
 - Keep `docs/architecture.md` and `docs/decisions/` updated for structural choices.
 - Docs are just-in-time: update the corresponding doc in the same PR as code.
