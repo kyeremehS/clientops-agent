@@ -25,7 +25,7 @@ export default function ApprovalCard({ approval }: { approval: Approval }) {
       </div>
       <div>Lead {approval.lead_id}</div>
       <div>Status: {status}</div>
-      <div>Expires: {new Date(approval.expires_at).toLocaleString()}</div>
+      <div>Expires: {new Date(approval.expires_at).toISOString()}</div>
       {!decided && (
         <div style={{ marginTop: "0.5rem" }}>
           <button onClick={() => act("approve")}>Approve</button>{" "}
