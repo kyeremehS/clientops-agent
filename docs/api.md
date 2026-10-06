@@ -16,6 +16,11 @@ Status: accepted. Pydantic schemas in `backend/app/schemas/` are the contract.
   `expired`, emits `approval.expired`, returns `409 approval_expired`.
   Success emits `approval.approved` with `actor="human"`.
 - `POST /approvals/{id}/reject` — same guards; success emits `approval.rejected`.
+- `POST /approvals/{id}/execute` (B5) — send the approved Slack message exactly
+  once. Requires `approved` status (`409 wrong_state` otherwise). Existing
+  `Action` row → returned without re-sending. Slack failure → `502 slack_failed`,
+  no `Action` row, `action.failed` event; safe to retry. Success emits
+  `action.started` then `action.succeeded` and returns `ActionRead`.
 
 ## Error behaviour
 

@@ -5,6 +5,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.api.actions import router as actions_router
 from app.api.leads import router as leads_router
 from app.config import settings
 from app.db.base import Base, get_engine
@@ -30,6 +31,7 @@ app.add_middleware(
     allow_headers=["Content-Type", "Authorization"],
 )
 app.include_router(leads_router)
+app.include_router(actions_router)
 
 
 @app.get("/health")
