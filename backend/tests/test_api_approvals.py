@@ -116,6 +116,18 @@ def test_approve_unknown_404(client: TestClient):
     assert response.status_code == 404
 
 
+def test_cors_allows_queue_origin(client: TestClient):
+    response = client.options(
+        "/approvals/pending",
+        headers={
+            "Origin": "http://localhost:3000",
+            "Access-Control-Request-Method": "GET",
+        },
+    )
+    assert response.status_code == 200
+    assert response.headers["access-control-allow-origin"] == "http://localhost:3000"
+
+
 def test_late_approve_is_409_and_marks_expired(client: TestClient, tmp_path):
     # Backdate expires_at directly in the DB to simulate a 25h-old approval.
     url = f"sqlite:///{tmp_path}/test.db"
