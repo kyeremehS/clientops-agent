@@ -1,0 +1,30 @@
+{
+  "id": "qualified-lead",
+  "description": "Clear operational pain with multiple strong sources.",
+  "lead": {
+    "company": "Acme Logistics",
+    "website": "https://acme.test",
+    "contact": "ops@acme.test",
+    "message": "Our support queue keeps growing, we need help."
+  },
+  "artifacts": [
+    {"id": "a1", "source_url": "https://acme.test/about", "content": "Acme runs 40 trucks across 3 depots."},
+    {"id": "a2", "source_url": "https://acme.test/careers", "content": "Hiring 5 support agents for ticket backlog."},
+    {"id": "a3", "source_url": "https://reviews.test/acme", "content": "Customers cite slow support responses."}
+  ],
+  "claims": [
+    {"text": "Fleet of 40 trucks across 3 depots", "evidence_refs": ["a1"]},
+    {"text": "Hiring 5 agents for ticket backlog", "evidence_refs": ["a2"]},
+    {"text": "Customers report slow support", "evidence_refs": ["a3"]}
+  ],
+  "qualification": {
+    "operational_pain": 2,
+    "automation_plausibility": 2,
+    "relevance": 2,
+    "evidence_quality": 2,
+    "supporting_evidence_ids": ["a1", "a2"],
+    "summary": "Support automation plausible with solid evidence."
+  },
+  "expected_decision": "REVIEW",
+  "expected_grounded": true
+}
