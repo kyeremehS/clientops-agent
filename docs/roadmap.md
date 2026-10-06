@@ -12,9 +12,9 @@ One brick at a time; docs just-in-time per box.
 - [x] B2 llm-openrouter — OpenRouter client, pinned `qwen/qwen3.8-27b:free`, JSON-schema → Pydantic
   - docs: `docs/agents.md`, `docs/decisions/0005-agents-honestly-guidance.md`
   - done-when: mocked guardrail tests pass; live structured-output check runs with key
-- [ ] B3 scoring-policy — pure `score(dims)` + `decide(...)` + unit tests
-  - docs: `docs/policy.md`
-  - done-when: `eq<=1→REVIEW`, `count<2→REVIEW`, `score<40→REJECT`, expiry `409` tests pass
+- [x] B3 scoring-policy — pure `score(dims)` + `decide(...)` + unit tests
+  - docs: `docs/policy.md` (already locked; no change needed)
+  - done-when: `eq<=1→REVIEW`, `count<2→REVIEW`, `score<40→REJECT` tests pass
 - [ ] B4 api-approvals-ui — endpoints + re-validation + minimal Next.js queue
   - docs: `docs/api.md`, `docs/workflow.md`
   - done-when: approve/reject happy + expired/late-approve `409` paths tested
