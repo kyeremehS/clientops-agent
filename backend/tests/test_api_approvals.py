@@ -117,15 +117,13 @@ def test_approve_unknown_404(client: TestClient):
 
 
 def test_cors_allows_queue_origin(client: TestClient):
-    response = client.options(
-        "/approvals/pending",
-        headers={
-            "Origin": "http://localhost:3000",
-            "Access-Control-Request-Method": "GET",
-        },
-    )
-    assert response.status_code == 200
-    assert response.headers["access-control-allow-origin"] == "http://localhost:3000"
+    for origin in ("http://localhost:3000", "http://localhost:3001"):
+        response = client.options(
+            "/approvals/pending",
+            headers={"Origin": origin, "Access-Control-Request-Method": "GET"},
+        )
+        assert response.status_code == 200
+        assert response.headers["access-control-allow-origin"] == origin
 
 
 def test_late_approve_is_409_and_marks_expired(client: TestClient, tmp_path):

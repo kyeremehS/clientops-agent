@@ -17,14 +17,15 @@ async def lifespan(_: FastAPI):
     yield
 
 
-# Slice 1 dev origins. Browsers block cross-origin UI → API calls without these.
-DEV_ORIGINS = ["http://localhost:3000", "http://127.0.0.1:3000"]
+# Slice 1 dev: the queue UI may land on any localhost port (3000, 3001, ...
+# when the default is busy), so match by regex instead of listing ports.
+DEV_ORIGIN_REGEX = r"https?://(localhost|127\.0\.0\.1)(:\d+)?"
 
 
 app = FastAPI(title="clientops-agent", lifespan=lifespan)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=DEV_ORIGINS,
+    allow_origin_regex=DEV_ORIGIN_REGEX,
     allow_methods=["GET", "POST"],
     allow_headers=["Content-Type", "Authorization"],
 )
