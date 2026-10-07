@@ -1,0 +1,92 @@
+[
+  {
+    "id": "acme-profile",
+    "objective": "What does Acme Logistics do? Company profile, industry, services.",
+    "max_results": 5
+  },
+  {
+    "id": "acme-pain",
+    "objective": "Operational pain signals at a mid-size logistics company: support backlog, hiring.",
+    "max_results": 5
+  },
+  {
+    "id": "acme-news",
+    "objective": "Acme Logistics news: funding, expansions, leadership changes.",
+    "max_results": 5
+  },
+  {
+    "id": "flexport-profile",
+    "objective": "What does Flexport do? Company profile, industry, services.",
+    "max_results": 5
+  },
+  {
+    "id": "flexport-pain",
+    "objective": "Operational pain signals at Flexport: layoffs, support backlog, customer complaints.",
+    "max_results": 5
+  },
+  {
+    "id": "flexport-news",
+    "objective": "Flexport news: funding, expansions, leadership changes.",
+    "max_results": 5
+  },
+  {
+    "id": "fourkites-profile",
+    "objective": "What does FourKites do? Company profile, industry, services.",
+    "max_results": 5
+  },
+  {
+    "id": "fourkites-pain",
+    "objective": "Operational pain signals at a supply chain visibility SaaS company: churn, hiring, outages.",
+    "max_results": 5
+  },
+  {
+    "id": "fourkites-news",
+    "objective": "FourKites news: funding, partnerships, leadership changes.",
+    "max_results": 5
+  },
+  {
+    "id": "xometry-profile",
+    "objective": "What does Xometry do? Company profile, industry, services.",
+    "max_results": 5
+  },
+  {
+    "id": "xometry-pain",
+    "objective": "Operational pain signals at a manufacturing marketplace: supplier complaints, fulfillment delays.",
+    "max_results": 5
+  },
+  {
+    "id": "xometry-news",
+    "objective": "Xometry news: earnings, acquisitions, leadership changes.",
+    "max_results": 5
+  },
+  {
+    "id": "deel-profile",
+    "objective": "What does Deel do? Company profile, industry, services.",
+    "max_results": 5
+  },
+  {
+    "id": "deel-pain",
+    "objective": "Operational pain signals at a global HR payroll company: compliance complaints, support backlog.",
+    "max_results": 5
+  },
+  {
+    "id": "deel-news",
+    "objective": "Deel news: funding, lawsuits, leadership changes.",
+    "max_results": 5
+  },
+  {
+    "id": "ramp-profile",
+    "objective": "What does Ramp do? Company profile, industry, services.",
+    "max_results": 5
+  },
+  {
+    "id": "ramp-pain",
+    "objective": "Operational pain signals at a corporate spend fintech: customer complaints, hiring, competition.",
+    "max_results": 5
+  },
+  {
+    "id": "ramp-news",
+    "objective": "Ramp news: funding rounds, product launches, leadership changes.",
+    "max_results": 5
+  }
+]
