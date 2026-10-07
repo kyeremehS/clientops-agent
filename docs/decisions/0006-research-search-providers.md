@@ -25,9 +25,13 @@ Decision:
   `X-API-KEY`) stay one env var away for A/B comparison.
 - Direct REST APIs, not MCP: retries, timeouts, budgets, logging, and mocking
   stay under our control (ADR 0005 doctrine).
-- Comparison method: `evaluation/compare_search.py` runs identical objectives
-  across keyed providers; relevance judgment is human and recorded here before
-  any default change. Vendor benchmarks are not evidence.
+- Comparison method: `python evaluation/compare_search.py` runs the
+  `evaluation/objectives.json` dataset (18 objectives) against every keyed
+  provider and persists `evaluation/runs/<ts>/{raw_results.json,metrics.json,
+  report.md}` (gitignored). Deterministic metrics only — latency, errors,
+  excerpt volume, dup URLs, cross-provider URL overlap. Relevance judgment
+  is human and recorded here before any default change. Vendor benchmarks
+  are not evidence.
 
 `website_fetch` stays first-party (httpx + stdlib parsing, SSRF/size guards):
 Serper's thin snippets make it mandatory there, nice-to-have elsewhere.
