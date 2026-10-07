@@ -3,7 +3,8 @@
 Usage:  python evaluation/compare_search.py   (from the repo root)
 
 Runs the same company-research objectives against every configured provider
-(keys read from the environment) and prints latency / volume / cost per call.
+(keys read from the environment, falling back to root .env) and prints
+latency / volume / cost per call.
 Relevance judgment is human: read the excerpts, fill the ADR table, pick the default.
 Providers without keys are skipped, never failed.
 """
@@ -30,6 +31,31 @@ OBJECTIVES = [
 
 COST_PER_1K = {"parallel": "$1", "tavily": "~$5-6 (basic depth)", "serper": "~$0.3-1"}
 
+_DOTENV_KEYS = ("PARALLEL_API_KEY", "TAVILY_API_KEY", "SERPER_API_KEY")
+
+
+def _load_dotenv_fallback() -> None:
+    """Fill provider keys from root .env when the shell has none set.
+
+    Keeps `python evaluation/compare_search.py` working from cmd/PowerShell
+    with no export step. Real environment variables always win.
+    """
+    env_file = REPO_ROOT / ".env"
+    if not env_file.is_file():
+        return
+    for line in env_file.read_text().splitlines():
+        line = line.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        name, _, value = line.partition("=")
+        name = name.strip()
+        if name not in _DOTENV_KEYS or os.environ.get(name):
+            continue
+        value = value.strip()
+        if len(value) >= 2 and value[0] == value[-1] and value[0] in ("'", '"'):
+            value = value[1:-1]
+        os.environ[name] = value
+
 
 def configured() -> dict[str, object]:
     providers: dict[str, object] = {}
@@ -43,6 +69,11 @@ def configured() -> dict[str, object]:
 
 
 def main() -> int:
+    try:
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    except (AttributeError, OSError):
+        pass  # non-console stdout (pipes) — print() already handles it
+    _load_dotenv_fallback()
     providers = configured()
     if not providers:
         print("no provider keys set (PARALLEL_API_KEY / TAVILY_API_KEY / SERPER_API_KEY)")
