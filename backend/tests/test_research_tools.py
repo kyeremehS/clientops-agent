@@ -1,6 +1,7 @@
 """C1: research tools. All network I/O mocked — no provider keys needed."""
 
 import httpx
+import json
 import pytest
 
 from app.tools import (
@@ -28,6 +29,10 @@ def test_parallel_maps_excerpts_and_skips_url_less():
     def handler(request: httpx.Request) -> httpx.Response:
         assert request.headers["x-api-key"] == "test-key"
         assert request.url.path == "/v1/search"
+        body = json.loads(request.content)
+        assert body["objective"] == "acme logistics"
+        assert body["search_queries"] == ["acme logistics"]
+        assert body["mode"] == "fast"
         return httpx.Response(
             200,
             json={
@@ -43,6 +48,18 @@ def test_parallel_maps_excerpts_and_skips_url_less():
     assert len(results) == 1
     assert results[0].excerpt == "one\ntwo"
     assert results[0].url == "https://a.test"
+
+
+def test_parallel_rejects_empty_objective_without_network():
+    calls = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        calls.append(1)
+        return httpx.Response(200, json={"results": []})
+
+    with pytest.raises(SearchConfigError):
+        _mocked(ParallelSearchProvider, handler).search("   ")
+    assert calls == []
 
 
 def test_tavily_maps_content():

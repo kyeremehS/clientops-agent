@@ -102,11 +102,19 @@ class ParallelSearchProvider:
 
     def search(self, objective: str, max_results: int = 5) -> list[SearchResult]:
         start = time.monotonic()
+        query = (objective or "").strip()[:200]
+        if not query:
+            raise SearchConfigError("parallel: objective must not be empty")
         envelope = _post_json(
             self._http,
             self.URL,
             {"Content-Type": "application/json", "x-api-key": self._api_key},
-            {"objective": objective, "mode": self._mode},
+            {
+                "objective": objective,
+                "search_queries": [query],
+                "mode": self._mode,
+                "advanced_settings": {"max_results": max_results},
+            },
             self._max_retries,
             "parallel",
         )

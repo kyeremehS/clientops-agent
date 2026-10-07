@@ -16,6 +16,11 @@ Decision:
 - **Parallel Fast is the default**: objective-in/excerpts-out maps directly onto
   `ResearchArtifact`, ~700ms, $1/1k requests, $5/mo free credits. Verified from
   `docs.parallel.ai/search-quickstart` (`x-api-key` header, `mode: "fast"`).
+- Parallel `/v1/search` requires `search_queries` (V1 migration: at least one
+  non-empty query; Beta accepted objective-only). `ParallelSearchProvider`
+  derives one query from the objective (truncated to 200 chars) and sends
+  `advanced_settings.max_results` — interface stays `search(objective,
+  max_results)` so agents never build queries.
 - Tavily (`basic` depth, Bearer auth) and Serper (SERP `organic` snippets,
   `X-API-KEY`) stay one env var away for A/B comparison.
 - Direct REST APIs, not MCP: retries, timeouts, budgets, logging, and mocking
