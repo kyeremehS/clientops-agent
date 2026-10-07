@@ -16,6 +16,16 @@ class Settings(BaseSettings):
     slack_channel_id: str = ""
     slack_timeout_s: float = 15.0
     slack_max_retries: int = 3
+    search_provider: str = "mock"
+    parallel_api_key: str = ""
+    tavily_api_key: str = ""
+    serper_api_key: str = ""
+    search_timeout_s: float = 20.0
+    search_max_retries: int = 3
+    search_max_results: int = 5
+    fetch_timeout_s: float = 15.0
+    fetch_max_bytes: int = 1_000_000
+    fetch_max_chars: int = 20_000
 
     model_config = {"env_prefix": "", "env_file": ".env", "extra": "ignore"}
 

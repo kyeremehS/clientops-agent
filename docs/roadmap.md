@@ -25,4 +25,16 @@ One brick at a time; docs just-in-time per box.
   - docs: `docs/evaluation.md` (filled)
   - done-when: `python evaluation/run.py` reports 3/3 + 0 policy violations
 
-Slice 1 complete: D0, D1, B1–B6. Slice 2 (not started): full replay, CRM/email, more sources.
+Slice 1 complete: D0, D1, B1–B6.
+
+## Slice 2 — close the loop (in progress)
+
+- [x] C1 research-tools — SearchProvider protocol + Parallel/Tavily/Serper + mock + first-party fetch
+  - docs: `docs/tools.md` (filled), `docs/decisions/0006-research-search-providers.md`
+  - done-when: mocked adapter/fetch tests pass; `evaluation/compare_search.py` runs
+- [ ] C2 agents — research + qualification prompts writing artifact/qualification rows
+- [ ] C3 orchestrator + wiring — end-to-end run pipeline, DB-backed state machine
+- [ ] C4 live eval — eval cases through the real pipeline, recorded results
+- [ ] C5 hardening — Alembic, API auth, budgets
+- [ ] C6 breadth — CRM/email actions, more sources
+- [ ] C7 demo polish — README demo, frontend run-detail view

@@ -1,7 +1,21 @@
-# Tools (Slice 1 — slack_post implemented in B5)
+# Tools (Slice 1–2 — slack_post + research tools implemented)
 
-Status: `slack_post` accepted in `backend/app/tools/slack.py`.
-`web_search` / `website_fetch` remain stubs for the research brick.
+Status: `slack_post` (B5) plus `web_search` / `website_fetch` (C1) accepted.
+All tools typed; network clients share the timeout/retry/no-bodies-logged doctrine.
+
+## Research tools (C1)
+
+- `SearchProvider.search(objective, max_results) → list[SearchResult]`
+  in `backend/app/tools/search.py`. Adapters: `ParallelSearchProvider`
+  (Fast mode, `x-api-key`, excerpts), `TavilySearchProvider` (`basic` depth,
+  Bearer auth, content snippets), `SerperSearchProvider` (SERP organic
+  snippets, `X-API-KEY`), `MockSearchProvider` (canned, records queries).
+  Switch via `SEARCH_PROVIDER`; `mock` is the safe default.
+- `WebsiteFetcher.fetch(url) → FetchResult{url, final_url, text, content_hash,
+  truncated}` in `backend/app/tools/fetch.py`. First-party httpx + stdlib
+  HTML parsing. Refuses non-http(s) schemes and private/loopback/link-local
+  destinations (SSRF guard), caps bytes (streamed) and chars, text responses
+  only. Hash covers `final_url + text` for stable artifact identity.
 
 ## Slice 1 tools
 
