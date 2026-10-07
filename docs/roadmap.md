@@ -32,6 +32,9 @@ Slice 1 complete: D0, D1, B1–B6.
 - [x] C1 research-tools — SearchProvider protocol + Parallel/Tavily/Serper + mock + first-party fetch
   - docs: `docs/tools.md` (filled), `docs/decisions/0006-research-search-providers.md`
   - done-when: mocked adapter/fetch tests pass; `evaluation/compare_search.py` runs
+- [x] C1b search-eval-harness — deterministic comparison runner (objectives dataset + persisted runs + overlap metrics)
+  - docs: `evaluation/README.md` (filled)
+  - done-when: mocked harness tests pass; one live `--limit 1` run persisted to `evaluation/runs/`
 - [ ] C2 agents — research + qualification prompts writing artifact/qualification rows
 - [ ] C3 orchestrator + wiring — end-to-end run pipeline, DB-backed state machine
 - [ ] C4 live eval — eval cases through the real pipeline, recorded results
