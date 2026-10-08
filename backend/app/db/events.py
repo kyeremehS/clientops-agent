@@ -7,7 +7,8 @@ from uuid import UUID
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.db.models import APPROVAL_TTL_HOURS, AuditEvent, utcnow
+from app.db.models import APPROVAL_TTL_HOURS, Approval, AuditEvent, utcnow
+from app.schemas.common import ApprovalStatus
 
 
 def sha256_hex(text: str) -> str:
@@ -16,6 +17,21 @@ def sha256_hex(text: str) -> str:
 
 def approval_expiry(requested_at: datetime) -> datetime:
     return requested_at + timedelta(hours=APPROVAL_TTL_HOURS)
+
+
+def create_approval(session: Session, lead_id: UUID) -> Approval:
+    """Create a pending approval + audit event. Shared by the API and the pipeline."""
+    requested_at = utcnow()
+    approval = Approval(
+        lead_id=lead_id,
+        status=ApprovalStatus.PENDING,
+        requested_at=requested_at,
+        expires_at=approval_expiry(requested_at),
+    )
+    session.add(approval)
+    session.flush()
+    append_audit_event(session, lead_id, "approval.requested")
+    return approval
 
 
 def _as_aware(moment: datetime) -> datetime:
