@@ -26,6 +26,7 @@ def _mocked(provider_cls, handler, **kwargs):
 
 
 def test_parallel_maps_excerpts_and_skips_url_less():
+    """Parallel maps excerpts→excerpt, skips url-less items, sends V1 payload."""
     def handler(request: httpx.Request) -> httpx.Response:
         assert request.headers["x-api-key"] == "test-key"
         assert request.url.path == "/v1/search"
@@ -110,6 +111,7 @@ def test_search_rate_limit_exhausted():
 
 
 def test_search_auth_failure_fails_fast():
+    """401 never retries: one request, then SearchResponseError."""
     calls = []
 
     def handler(request: httpx.Request) -> httpx.Response:
@@ -169,6 +171,7 @@ def test_fetch_rejects_schemes():
 
 
 def test_fetch_blocks_ssrf_targets():
+    """Loopback/private/link-local destinations are refused pre-request."""
     fetcher = WebsiteFetcher()
     for url in ("http://127.0.0.1/", "http://10.0.0.1/", "http://169.254.169.254/latest/"):
         with pytest.raises(FetchBlockedError):
