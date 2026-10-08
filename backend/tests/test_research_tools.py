@@ -190,3 +190,38 @@ def test_fetch_truncates_over_cap():
     result = _fetcher(handler, max_bytes=200, max_chars=100).fetch("http://93.184.216.34/")
 
     assert result.truncated is True
+
+
+def test_fetch_blocks_redirect_into_private_host():
+    seen: list[str] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        seen.append(str(request.url))
+        if len(seen) == 1:
+            return httpx.Response(302, headers={"location": "http://169.254.169.254/latest/"})
+        return httpx.Response(200, headers={"content-type": "text/html"}, text=HTML)
+
+    with pytest.raises(FetchBlockedError):
+        _fetcher(handler).fetch("http://93.184.216.34/start")
+
+    assert seen == ["http://93.184.216.34/start"]
+
+
+def test_fetch_follows_safe_redirect():
+    def handler(request: httpx.Request) -> httpx.Response:
+        if request.url.path == "/start":
+            return httpx.Response(302, headers={"location": "/final"})
+        return httpx.Response(200, headers={"content-type": "text/html"}, text=HTML)
+
+    result = _fetcher(handler).fetch("http://93.184.216.34/start")
+
+    assert result.final_url == "http://93.184.216.34/final"
+    assert "Acme Logistics" in result.text
+
+
+def test_fetch_rejects_redirect_loop():
+    def handler(request: httpx.Request) -> httpx.Response:
+        return httpx.Response(302, headers={"location": "/loop"})
+
+    with pytest.raises(FetchResponseError):
+        _fetcher(handler, max_redirects=2).fetch("http://93.184.216.34/loop")

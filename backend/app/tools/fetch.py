@@ -4,6 +4,8 @@ Guards (untrusted-input doctrine: the lead supplies the URL):
 - http(s) only. file://, ftp://, and friends are rejected, never fetched.
 - SSRF block: hostnames resolving to private / loopback / link-local /
   multicast / reserved addresses are refused before any byte is sent.
+- Redirects are followed manually (max 5) so every hop is re-validated
+  before requesting — a public URL may not bounce into a private one.
 - byte cap (streamed, truncated with a flag) and timeout on every request.
 - text/* responses only; binaries fail fast with a typed error.
 """
@@ -15,7 +17,7 @@ import re
 import socket
 import time
 from html.parser import HTMLParser
-from urllib.parse import urlsplit
+from urllib.parse import urljoin, urlsplit
 
 import httpx
 from pydantic import BaseModel
@@ -92,23 +94,29 @@ def _is_unsafe_host(host: str) -> bool:
     return False
 
 
+_REDIRECT_STATUS = {301, 302, 303, 307, 308}
+
+
 class WebsiteFetcher:
     def __init__(
         self,
         timeout_s: float = 15.0,
         max_bytes: int = 1_000_000,
         max_chars: int = 20_000,
+        max_redirects: int = 5,
         user_agent: str = "clientops-agent/1.0 research",
         http_client: httpx.Client | None = None,
     ) -> None:
         self._timeout_s = timeout_s
         self._max_bytes = max_bytes
         self._max_chars = max_chars
+        self._max_redirects = max_redirects
         self._http = http_client or httpx.Client(
-            timeout=timeout_s, follow_redirects=True, max_redirects=5, headers={"User-Agent": user_agent}
+            timeout=timeout_s, follow_redirects=False, headers={"User-Agent": user_agent}
         )
 
-    def fetch(self, url: str) -> FetchResult:
+    def _check_destination(self, url: str) -> str:
+        """Reject unsafe scheme/host before any byte is sent. Returns the host."""
         scheme = urlsplit(url).scheme.lower()
         if scheme not in ("http", "https"):
             raise FetchBlockedError(f"refused scheme: {scheme or '(none)'}")
@@ -119,45 +127,64 @@ class WebsiteFetcher:
             raise FetchResponseError(f"unresolvable host {host}: {exc}")
         if unsafe:
             raise FetchBlockedError(f"refused destination: {host}")
-        start = time.monotonic()
-        try:
-            with self._http.stream("GET", url) as response:
-                if response.status_code >= 400:
-                    raise FetchResponseError(f"HTTP {response.status_code} for {url}")
-                content_type = response.headers.get("content-type", "")
-                if "text" not in content_type and "html" not in content_type:
-                    raise FetchResponseError(f"non-text content ({content_type}) for {url}")
-                chunks: list[bytes] = []
-                size = 0
-                truncated = False
-                for chunk in response.iter_bytes(chunk_size=65536):
-                    size += len(chunk)
-                    if size > self._max_bytes:
-                        truncated = True
-                        break
-                    chunks.append(chunk)
-                body = b"".join(chunks).decode(response.encoding or "utf-8", errors="replace")
-        except httpx.TimeoutException as exc:
-            raise FetchResponseError(f"timeout fetching {url}: {exc}")
-        except httpx.TransportError as exc:
-            raise FetchResponseError(f"transport failure for {url}: {exc}")
-        extractor = _TextExtractor()
-        extractor.feed(body)
-        text, over_chars = extractor.text(self._max_chars)
-        final_url = str(response.url)
-        digest = hashlib.sha256(f"{final_url}\n{text}".encode("utf-8")).hexdigest()
-        logger.info(
-            "fetch.ok url=%s final=%s chars=%d truncated=%s latency_ms=%d",
-            url,
-            final_url,
-            len(text),
-            truncated or over_chars,
-            int((time.monotonic() - start) * 1000),
-        )
-        return FetchResult(
-            url=url,
-            final_url=final_url,
-            text=text,
-            content_hash=digest,
-            truncated=truncated or over_chars,
-        )
+        return host
+
+    def fetch(self, url: str) -> FetchResult:
+        current = url
+        for _ in range(self._max_redirects + 1):
+            host = self._check_destination(current)
+            start = time.monotonic()
+            try:
+                with self._http.stream(
+                    "GET", current, follow_redirects=False
+                ) as response:
+                    if response.status_code in _REDIRECT_STATUS:
+                        location = response.headers.get("location", "")
+                        if not location:
+                            raise FetchResponseError(f"redirect without location: {host}")
+                        current = urljoin(current, location)
+                        continue
+                    if response.status_code >= 400:
+                        raise FetchResponseError(f"HTTP {response.status_code} for {url}")
+                    content_type = response.headers.get("content-type", "")
+                    if "text" not in content_type and "html" not in content_type:
+                        raise FetchResponseError(
+                            f"non-text content ({content_type}) for {url}"
+                        )
+                    chunks: list[bytes] = []
+                    size = 0
+                    truncated = False
+                    for chunk in response.iter_bytes(chunk_size=65536):
+                        size += len(chunk)
+                        if size > self._max_bytes:
+                            truncated = True
+                            break
+                        chunks.append(chunk)
+                    body = b"".join(chunks).decode(
+                        response.encoding or "utf-8", errors="replace"
+                    )
+            except httpx.TimeoutException as exc:
+                raise FetchResponseError(f"timeout fetching {url}: {exc}")
+            except httpx.TransportError as exc:
+                raise FetchResponseError(f"transport failure for {url}: {exc}")
+            extractor = _TextExtractor()
+            extractor.feed(body)
+            text, over_chars = extractor.text(self._max_chars)
+            final_url = str(response.url)
+            digest = hashlib.sha256(f"{final_url}\n{text}".encode("utf-8")).hexdigest()
+            logger.info(
+                "fetch.ok url=%s final=%s chars=%d truncated=%s latency_ms=%d",
+                url,
+                final_url,
+                len(text),
+                truncated or over_chars,
+                int((time.monotonic() - start) * 1000),
+            )
+            return FetchResult(
+                url=url,
+                final_url=final_url,
+                text=text,
+                content_hash=digest,
+                truncated=truncated or over_chars,
+            )
+        raise FetchResponseError(f"too many redirects for {url}")
