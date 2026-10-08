@@ -11,7 +11,13 @@
 - Scaffold first, implementation second. Do not add business logic in skeleton commit.
 - Backend packages mirror `blackbox-agents`: `api`, `orchestrator`, `policy`, `agents`, `tools`, `evidence`, `schemas`, `db`, `llm`.
 - Pydantic is the single source of truth for API contracts.
+- Schema first: update Pydantic models before code; TS types regenerate
+  from OpenAPI, never hand-edited out of sync.
 - Policy checks are deterministic and fail closed.
+- Safety and evidence beat speed: never weaken a guardrail to move
+  faster — flag it instead. Ambiguous scope means stop.
+- Every policy/tool decision returns a reason string (stable code for
+  traces, plain words for humans).
 - Python 3.12+, line length 100, ruff + black.
 - Frontend is a thin client; no business logic duplication.
 
