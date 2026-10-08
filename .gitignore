@@ -26,6 +26,9 @@ pgdata/
 # Eval run artifacts (raw excerpts stay local; ADR verdicts commit)
 evaluation/runs/
 
+# Docs stay local (strategy, ADRs, roadmap) — never published
+docs/
+
 # OS / IDE
 .DS_Store
 .vscode/
