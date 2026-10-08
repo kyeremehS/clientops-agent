@@ -23,3 +23,5 @@
 - Keep `docs/architecture.md` and `docs/decisions/` updated for structural choices.
 - Docs are just-in-time: update the corresponding doc in the same PR as code.
 - Track progress in `docs/roadmap.md` — check a box only when its done-when passes.
+- Commits are short: `<type>(<scope>): <what changed>`, ~50 chars, no body
+  unless the why is non-obvious. Types: feat, fix, chore, docs, test, refactor.
