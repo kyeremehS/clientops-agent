@@ -31,3 +31,6 @@
 - Track progress in `docs/roadmap.md` — check a box only when its done-when passes.
 - Commits are short: `<type>(<scope>): <what changed>`, ~50 chars, no body
   unless the why is non-obvious. Types: feat, fix, chore, docs, test, refactor.
+- Explain implementations plainly: what changed, why, how to verify.
+  No jargon without a definition; the reader should never need to ask
+  a follow-up to understand what was done.
