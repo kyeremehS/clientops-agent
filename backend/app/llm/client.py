@@ -70,6 +70,11 @@ class OpenRouterClient:
             },
         }
         raw, usage, finish_reason, latency_ms = self._post_with_retry(body)
+        if finish_reason == "length":
+            raise LLMResponseError(
+                f"output truncated by max_tokens={self._max_tokens}; "
+                "raise the budget instead of retrying"
+            )
         total = usage.get("total_tokens")
         if (
             self._max_total_tokens is not None

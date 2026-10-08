@@ -2,7 +2,8 @@
 
 from app.schemas.leads import LeadCreate
 
-_EVIDENCE_CHARS = 3000
+_EVIDENCE_CHARS = 1500
+_MAX_EVIDENCE_ITEMS = 10
 
 
 def build_claim_queries(company: str) -> list[str]:
@@ -42,9 +43,11 @@ def build_research_prompt(lead: LeadCreate, evidence: list[dict]) -> str:
         "",
         "Evidence:",
     ]
-    for i, item in enumerate(evidence, 1):
+    for i, item in enumerate(evidence[:_MAX_EVIDENCE_ITEMS], 1):
         text = (item.get("text") or "")[:_EVIDENCE_CHARS]
         lines.append(f"[source {i}: {item.get('url', '')}]\n{text}")
+    if len(evidence) > _MAX_EVIDENCE_ITEMS:
+        lines.append(f"({len(evidence) - _MAX_EVIDENCE_ITEMS} further sources omitted)")
     if not evidence:
         lines.append("(no evidence gathered)")
     return "\n".join(lines)

@@ -24,3 +24,17 @@ Provider comparison (informational, never gated):
 
 Relevance judgment is human — read `report.md`, record the verdict in
 `docs/decisions/0006-research-search-providers.md` before changing the default.
+
+Live pipeline eval (manual runs only — never CI, costs real credits):
+`python evaluation/live_eval.py` from the repo root.
+
+- `live_cases/*.json` — 3 real-company cases with loose expectations
+  (outcome, fit floor/ceiling, approval presence, no external action,
+  grounded citations). Fictional `.test` leads stay in `cases/` for the
+  deterministic gate; live needs searchable companies.
+- Runs each case through the real pipeline on scratch SQLite files and
+  persists `runs/live-<ts>/{<case>.json,summary.json}` (gitignored).
+- Loose by design: the live web shifts, so a mismatch exits nonzero for
+  human triage, never as a build failure. A boring company must score low
+  (fit ceiling); weak evidence escalates to REVIEW by policy (REJECT needs
+  sufficient evidence, so thin-evidence cases never expect REJECT).
