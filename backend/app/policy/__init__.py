@@ -10,6 +10,7 @@ from app.policy.rules import (
     decide,
     score,
 )
+from app.schemas.common import DecisionOutcome
 
 __all__ = [
     "DIMENSIONS",
@@ -18,6 +19,7 @@ __all__ = [
     "MIN_SUPPORTING_ITEMS",
     "REJECT",
     "REVIEW",
+    "DecisionOutcome",
     "decide",
     "score",
 ]

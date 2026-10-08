@@ -9,6 +9,8 @@ from sqlalchemy.types import Uuid
 
 from app.db.base import Base
 
+from app.schemas.common import ApprovalStatus
+
 APPROVAL_TTL_HOURS = 24
 
 
@@ -84,7 +86,9 @@ class Approval(Base):
     lead_id: Mapped[uuid.UUID] = mapped_column(
         Uuid, ForeignKey("leads.id", ondelete="CASCADE"), nullable=False, unique=True
     )
-    status: Mapped[str] = mapped_column(String(16), nullable=False, default="pending")
+    status: Mapped[str] = mapped_column(
+        String(16), nullable=False, default=ApprovalStatus.PENDING
+    )
     requested_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, default=utcnow
     )

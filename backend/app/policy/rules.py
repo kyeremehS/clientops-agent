@@ -8,6 +8,8 @@ Locked rules (see docs/policy.md):
 - otherwise → REVIEW. Zero automatic external action in Slice 1.
 """
 
+from app.schemas.common import DecisionOutcome
+
 DIMENSIONS = (
     "operational_pain",
     "automation_plausibility",
@@ -15,8 +17,8 @@ DIMENSIONS = (
     "evidence_quality",
 )
 
-REJECT = "REJECT"
-REVIEW = "REVIEW"
+REJECT = DecisionOutcome.REJECT
+REVIEW = DecisionOutcome.REVIEW
 
 FIT_REJECT_BELOW = 40.0
 MIN_SUPPORTING_ITEMS = 2

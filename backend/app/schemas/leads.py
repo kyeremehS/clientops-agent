@@ -5,6 +5,8 @@ from uuid import UUID
 
 from pydantic import BaseModel
 
+from app.schemas.common import ApprovalStatus
+
 
 class LeadCreate(BaseModel):
     company: str
@@ -25,7 +27,7 @@ class LeadRead(BaseModel):
 class ApprovalRead(BaseModel):
     id: UUID
     lead_id: UUID
-    status: str
+    status: ApprovalStatus
     requested_at: datetime
     expires_at: datetime
     decided_at: datetime | None

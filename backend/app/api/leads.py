@@ -13,6 +13,7 @@ from sqlalchemy.orm import Session
 from app.api.deps import get_session
 from app.db.events import append_audit_event, approval_expiry, is_approval_expired, utcnow
 from app.db.models import Approval, Lead
+from app.schemas.common import ApprovalStatus
 from app.schemas.leads import ApprovalRead, LeadCreate, LeadRead
 
 router = APIRouter()
@@ -33,7 +34,7 @@ def _get_approval_or_404(session: Session, approval_id: UUID) -> Approval:
 
 
 def _require_actionable(approval: Approval) -> None:
-    if approval.status != "pending":
+    if approval.status != ApprovalStatus.PENDING:
         raise HTTPException(status_code=409, detail="wrong_state")
     if is_approval_expired(approval.expires_at):
         raise HTTPException(status_code=409, detail="approval_expired")
@@ -62,7 +63,7 @@ def get_lead(lead_id: UUID, session: Session = Depends(get_session)) -> Lead:
 
 @router.get("/approvals/pending", response_model=list[ApprovalRead])
 def list_pending_approvals(session: Session = Depends(get_session)) -> list[Approval]:
-    stmt = select(Approval).where(Approval.status == "pending").order_by(Approval.requested_at)
+    stmt = select(Approval).where(Approval.status == ApprovalStatus.PENDING).order_by(Approval.requested_at)
     return list(session.scalars(stmt))
 
 
@@ -70,14 +71,14 @@ def list_pending_approvals(session: Session = Depends(get_session)) -> list[Appr
 def request_approval(lead_id: UUID, session: Session = Depends(get_session)) -> Approval:
     _get_lead_or_404(session, lead_id)
     existing = session.scalar(select(Approval).where(Approval.lead_id == lead_id))
-    if existing is not None and existing.status == "pending":
+    if existing is not None and existing.status == ApprovalStatus.PENDING:
         raise HTTPException(status_code=409, detail="wrong_state")
-    if existing is not None and existing.status == "approved":
+    if existing is not None and existing.status == ApprovalStatus.APPROVED:
         raise HTTPException(status_code=409, detail="wrong_state")
     requested_at = utcnow()
     approval = Approval(
         lead_id=lead_id,
-        status="pending",
+        status=ApprovalStatus.PENDING,
         requested_at=requested_at,
         expires_at=approval_expiry(requested_at),
     )
@@ -96,12 +97,12 @@ def approve(approval_id: UUID, session: Session = Depends(get_session)) -> Appro
         _require_actionable(approval)
     except HTTPException as exc:
         if exc.detail == "approval_expired":
-            approval.status = "expired"
+            approval.status = ApprovalStatus.EXPIRED
             approval.decided_at = utcnow()
             append_audit_event(session, approval.lead_id, "approval.expired")
             session.commit()
         raise
-    approval.status = "approved"
+    approval.status = ApprovalStatus.APPROVED
     approval.decided_at = utcnow()
     append_audit_event(session, approval.lead_id, "approval.approved", actor="human")
     session.commit()
@@ -116,12 +117,12 @@ def reject(approval_id: UUID, session: Session = Depends(get_session)) -> Approv
         _require_actionable(approval)
     except HTTPException as exc:
         if exc.detail == "approval_expired":
-            approval.status = "expired"
+            approval.status = ApprovalStatus.EXPIRED
             approval.decided_at = utcnow()
             append_audit_event(session, approval.lead_id, "approval.expired")
             session.commit()
         raise
-    approval.status = "rejected"
+    approval.status = ApprovalStatus.REJECTED
     approval.decided_at = utcnow()
     append_audit_event(session, approval.lead_id, "approval.rejected", actor="human")
     session.commit()

@@ -16,6 +16,7 @@ from app.config import settings
 from app.db.events import append_audit_event
 from app.db.models import Action, Approval, Lead
 from app.schemas.actions import ActionRead
+from app.schemas.common import ApprovalStatus
 from app.tools.slack import SlackError, SlackSender, format_qualification_message
 
 router = APIRouter()
@@ -34,7 +35,7 @@ def execute_approval(
     approval = session.get(Approval, approval_id)
     if approval is None:
         raise HTTPException(status_code=404, detail="approval_not_found")
-    if approval.status != "approved":
+    if approval.status != ApprovalStatus.APPROVED:
         raise HTTPException(status_code=409, detail="wrong_state")
 
     key = _idempotency_key(approval.id)
