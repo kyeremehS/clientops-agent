@@ -25,6 +25,7 @@ def test_research_result_defaults_to_empty_not_null():
 def test_runner_signatures_cover_inputs_outputs():
     sig = inspect.signature(research.run_research)
     assert list(sig.parameters) == [
+        "lead_id",
         "lead",
         "search",
         "fetcher",
@@ -33,5 +34,5 @@ def test_runner_signatures_cover_inputs_outputs():
         "max_results",
     ]
     qual_sig = inspect.signature(qualification.run_qualification)
-    assert list(qual_sig.parameters) == ["lead", "artifacts", "llm", "session"]
+    assert list(qual_sig.parameters) == ["lead_id", "lead", "llm", "session"]
     assert "search" not in qual_sig.parameters and "fetcher" not in qual_sig.parameters
