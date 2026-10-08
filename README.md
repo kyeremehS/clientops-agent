@@ -1,40 +1,46 @@
 # clientops-agent
 
-Turns an inbound lead into an evidence-backed, auditable operational decision:
-research → evidence → opportunity assessment → deterministic policy →
-human approval → Slack action → audit.
+A sales lead comes in. The system researches the company online, scores
+whether there's a real automation opportunity, and — only after a human
+clicks approve — posts to Slack. Every step is saved as evidence.
 
-> Model proposes. App scores + applies policy. Human authorizes the external action.
+## How it works
 
-## Quick start
+1. **Lead arrives** — company name, website, and message (via API or UI).
+2. **Research** — web search + website fetch gather facts with source URLs.
+3. **Qualification** — the AI rates four dimensions 0–3 (operational pain,
+   automation plausibility, relevance, evidence quality). It proposes;
+   it never decides.
+4. **Policy (code, not AI)** — fit score below 40 → REJECT. Weak evidence
+   (≤1) or fewer than 2 sources → REVIEW. Nothing sends itself, ever.
+5. **Human approval** — REVIEW cases wait in a web queue. Approvals expire
+   after 24 hours.
+6. **Slack action + audit** — on approval, one message posts to #sales-leads
+   (exactly once — retries can't double-send). Each step links into a
+   tamper-evident audit chain.
+
+## Run it
 
 ```powershell
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 pip install -r backend/requirements.txt
-docker compose up db
+docker compose up db            # Postgres
+Copy-Item .env.example .env     # then fill in your keys; never commit tokens
 python -m pytest backend/tests -q
 ```
 
-Copy `.env.example` to `.env` (never commit tokens).
+Backend runs from `backend/`: `uvicorn app.main:app --reload`.
+Frontend runs from `frontend/`: `pnpm install; pnpm dev`.
 
-## Example workflow (Slice 1)
+## Safety rules
 
-```text
-Inbound lead → Research (web + website) → Qualification (LLM dims, code scores)
-  → Policy (REJECT/REVIEW) → Frontend approvals queue → Slack #sales-leads → Audit chain
-```
+- AI proposes, code disposes, humans authorize. No automatic external action.
+- Ambiguous scope means stop, not proceed.
+- Prompts, search results, and web pages are untrusted input — secrets never
+  go into prompts, logs, or stored evidence.
 
-## Safety / guardrails
+## Docs (local, in `docs/`)
 
-- Deterministic policy, fail closed. Fit `<40` → REJECT; weak evidence (`≤1`) → REVIEW.
-- Zero automatic external action. Approvals expire after 24h (`409 approval_expired`).
-
-## Documentation
-
-- [Product](docs/product.md) · [Architecture](docs/architecture.md) · [Workflow](docs/workflow.md)
-- [Agents](docs/agents.md) · [Policy](docs/policy.md) · [Evaluation](docs/evaluation.md)
-- [Roadmap / progress](docs/roadmap.md) · [Runbooks](docs/runbooks/local-development.md)
-- Decisions: [0001](docs/decisions/0001-no-langgraph-yet.md), [0002](docs/decisions/0002-custom-state-machine.md), [0003](docs/decisions/0003-slice1-locks.md)
-
-Demo and evaluation results: TBD (land with Slice 1 build).
+Product · Architecture · Workflow · Agents · Policy · Evaluation ·
+Roadmap · Runbooks · Decisions (`docs/decisions/`)
