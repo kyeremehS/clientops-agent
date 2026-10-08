@@ -120,6 +120,18 @@ def test_out_of_range_dimension_rejected():
         _client(handler).complete_json(MESSAGES, QualificationResult)
 
 
+def test_truncated_output_names_budget_not_validation():
+    """finish_reason=length → response error telling the caller to raise budget."""
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        envelope = _envelope(GOOD_CONTENT)
+        envelope["choices"][0]["message"]["finish_reason"] = "length"
+        return httpx.Response(200, json=envelope)
+
+    with pytest.raises(LLMResponseError, match="max_tokens"):
+        _client(handler).complete_json(MESSAGES, QualificationResult)
+
+
 def test_missing_api_key():
     with pytest.raises(LLMConfigError):
         OpenRouterClient(api_key="", model="m")

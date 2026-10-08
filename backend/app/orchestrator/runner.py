@@ -81,4 +81,7 @@ def run_lead(
         "fit": fit,
         "approval_id": approval_id,
         "reasons": reasons,
+        "claims": [
+            {"claim": c.claim, "source_urls": list(c.source_urls)} for c in research.claims
+        ],
     }

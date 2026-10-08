@@ -11,7 +11,7 @@ class Settings(BaseSettings):
     database_url: str = "postgresql://postgres:postgres@localhost:5432/clientops"
     # LLM
     llm_provider: str = "openrouter"
-    llm_model: str = "qwen/qwen3.8-27b:free"
+    llm_model: str = "nvidia/nemotron-3-super-120b-a12b:free"
     openrouter_api_key: str = ""
     llm_timeout_s: float = 30.0
     llm_max_retries: int = 3

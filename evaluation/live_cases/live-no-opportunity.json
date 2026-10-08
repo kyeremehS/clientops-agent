@@ -1,0 +1,14 @@
+{
+  "id": "live-no-opportunity",
+  "description": "Large stable industrial distributor, no visible pain or hype. A boring company must not score highly; weak evidence escalates to REVIEW by policy (REJECT needs sufficient evidence).",
+  "lead": {
+    "company": "W.W. Grainger",
+    "website": "https://www.grainger.com",
+    "contact": "ops@grainger.example",
+    "message": "Just browsing what is out there."
+  },
+  "expected_outcome": "REVIEW",
+  "max_fit": 40,
+  "require_approval": true,
+  "forbid_action": true
+}

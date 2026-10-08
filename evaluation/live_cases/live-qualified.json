@@ -1,0 +1,14 @@
+{
+  "id": "live-qualified",
+  "description": "Real freight forwarder with public layoff/support-backlog signals. Expect REVIEW with approval.",
+  "lead": {
+    "company": "Flexport",
+    "website": "https://www.flexport.com",
+    "contact": "ops@flexport.example",
+    "message": "Our support queue keeps growing as freight volumes swing, we need help."
+  },
+  "expected_outcome": "REVIEW",
+  "min_fit": 40,
+  "require_approval": true,
+  "forbid_action": true
+}
