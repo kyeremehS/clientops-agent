@@ -32,6 +32,7 @@ def test_runner_signatures_cover_inputs_outputs():
         "llm",
         "session",
         "max_results",
+        "guard",
     ]
     qual_sig = inspect.signature(qualification.run_qualification)
     assert list(qual_sig.parameters) == ["lead_id", "lead", "llm", "session"]

@@ -11,7 +11,12 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.api.deps import get_session
-from app.db.events import append_audit_event, approval_expiry, is_approval_expired, utcnow
+from app.db.events import (
+    append_audit_event,
+    create_approval,
+    is_approval_expired,
+    utcnow,
+)
 from app.db.models import Approval, Lead
 from app.schemas.common import ApprovalStatus
 from app.schemas.leads import ApprovalRead, LeadCreate, LeadRead
@@ -75,16 +80,7 @@ def request_approval(lead_id: UUID, session: Session = Depends(get_session)) -> 
         raise HTTPException(status_code=409, detail="wrong_state")
     if existing is not None and existing.status == ApprovalStatus.APPROVED:
         raise HTTPException(status_code=409, detail="wrong_state")
-    requested_at = utcnow()
-    approval = Approval(
-        lead_id=lead_id,
-        status=ApprovalStatus.PENDING,
-        requested_at=requested_at,
-        expires_at=approval_expiry(requested_at),
-    )
-    session.add(approval)
-    session.flush()
-    append_audit_event(session, lead_id, "approval.requested")
+    approval = create_approval(session, lead_id)
     session.commit()
     session.refresh(approval)
     return approval

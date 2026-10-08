@@ -7,6 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.actions import router as actions_router
 from app.api.leads import router as leads_router
+from app.api.runs import router as runs_router
 from app.config import settings
 from app.db.base import Base, get_engine
 
@@ -32,6 +33,7 @@ app.add_middleware(
 )
 app.include_router(leads_router)
 app.include_router(actions_router)
+app.include_router(runs_router)
 
 
 @app.get("/health")
