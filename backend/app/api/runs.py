@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 
 from app.api.deps import get_llm_client, get_search_provider, get_session, get_website_fetcher
 from app.config import settings
-from app.llm.client import OpenRouterClient
+from app.llm import GroqClient, OpenRouterClient
 from app.orchestrator.runner import LeadNotFoundError, run_lead
 from app.schemas.runs import RunRead
 from app.tools.fetch import WebsiteFetcher
@@ -22,7 +22,7 @@ def run_lead_endpoint(
     session: Session = Depends(get_session),
     search: SearchProvider = Depends(get_search_provider),
     fetcher: WebsiteFetcher = Depends(get_website_fetcher),
-    llm: OpenRouterClient = Depends(get_llm_client),
+    llm: OpenRouterClient | GroqClient = Depends(get_llm_client),
 ) -> dict:
     try:
         return run_lead(

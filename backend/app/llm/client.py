@@ -41,6 +41,7 @@ class OpenRouterClient:
         max_retries: int = 3,
         max_tokens: int = 2000,
         max_total_tokens: int | None = None,
+        base_url: str = OPENROUTER_URL,
         http_client: httpx.Client | None = None,
     ) -> None:
         if not api_key:
@@ -53,6 +54,7 @@ class OpenRouterClient:
         self._max_retries = max_retries
         self._max_tokens = max_tokens
         self._max_total_tokens = max_total_tokens
+        self._base_url = base_url
         self._http = http_client or httpx.Client(timeout=timeout_s)
 
     def complete_json(
@@ -105,7 +107,7 @@ class OpenRouterClient:
         for attempt in range(self._max_retries + 1):
             start = time.monotonic()
             try:
-                response = self._http.post(OPENROUTER_URL, headers=headers, json=body)
+                response = self._http.post(self._base_url, headers=headers, json=body)
             except httpx.TimeoutException as exc:
                 last_error = exc
                 self._backoff(attempt)

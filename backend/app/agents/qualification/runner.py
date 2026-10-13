@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 
 from app.agents.qualification.prompts import build_qualification_prompt
 from app.db.models import Qualification, ResearchArtifact
-from app.llm.client import OpenRouterClient
+from app.llm import GroqClient, OpenRouterClient
 from app.policy import score
 from app.schemas.leads import LeadCreate
 from app.schemas.qualification import QualificationResult
@@ -18,7 +18,7 @@ _NO_SUPPORT_SUMMARY = "no sufficiently supported automation opportunity found"
 def run_qualification(
     lead_id: UUID,
     lead: LeadCreate,
-    llm: OpenRouterClient,
+    llm: OpenRouterClient | GroqClient,
     session: Session,
 ) -> tuple[QualificationResult, float]:
     """Rate dimensions, persist the qualification row, return (result, fit).
