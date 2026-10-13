@@ -31,7 +31,7 @@ from sqlalchemy.orm import sessionmaker  # noqa: E402
 from app.config import settings  # noqa: E402
 from app.db.base import Base  # noqa: E402
 from app.db.models import Action, Lead, ResearchArtifact  # noqa: E402
-from app.llm.client import client_from_settings  # noqa: E402
+from app.llm import llm_client_from_settings  # noqa: E402
 from app.orchestrator.runner import run_lead  # noqa: E402
 from app.tools.fetch import WebsiteFetcher  # noqa: E402
 from app.tools.search import create_search_provider  # noqa: E402
@@ -124,13 +124,7 @@ def _build_live_clients():
         max_bytes=settings.fetch_max_bytes,
         max_chars=settings.fetch_max_chars,
     )
-    llm = client_from_settings(
-        api_key=settings.openrouter_api_key,
-        model=settings.llm_model,
-        timeout_s=settings.llm_timeout_s,
-        max_retries=settings.llm_max_retries,
-        max_tokens=settings.llm_max_tokens,
-    )
+    llm = llm_client_from_settings(settings)
     return search, fetcher, llm
 
 
