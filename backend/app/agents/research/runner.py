@@ -64,7 +64,7 @@ def run_research(
         {"id": str(a.id), "url": a.source_url, "text": a.content} for a in artifacts
     ]
     if not evidence:
-        return ResearchResult(inconclusive=True, note="no fetchable evidence found")
+        return ResearchResult(claims=[], inconclusive=True, note="no fetchable evidence found")
 
     parsed, _ = llm.complete_json(
         [{"role": "user", "content": build_research_prompt(lead, evidence)}],
@@ -73,7 +73,9 @@ def run_research(
     )
     claims = [c for c in parsed.claims if c.source_urls]
     if not claims:
-        return ResearchResult(inconclusive=True, note="no sourced claims synthesized")
+        return ResearchResult(
+            claims=[], inconclusive=True, note="no sourced claims synthesized"
+        )
     return ResearchResult(claims=claims, inconclusive=False, note=parsed.note)
 
 

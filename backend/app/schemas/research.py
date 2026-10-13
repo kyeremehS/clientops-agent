@@ -1,6 +1,6 @@
 """Research output schema. Single source of truth for claim synthesis output."""
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 
 class ResearchClaim(BaseModel):
@@ -9,8 +9,8 @@ class ResearchClaim(BaseModel):
     model_config = {"extra": "forbid"}
 
     claim: str
-    evidence_refs: list[str] = Field(default_factory=list)
-    source_urls: list[str] = Field(default_factory=list)
+    evidence_refs: list[str]
+    source_urls: list[str]
 
 
 class ResearchResult(BaseModel):
@@ -18,6 +18,6 @@ class ResearchResult(BaseModel):
 
     model_config = {"extra": "forbid"}
 
-    claims: list[ResearchClaim] = Field(default_factory=list)
-    inconclusive: bool = False
-    note: str = ""
+    claims: list[ResearchClaim]
+    inconclusive: bool
+    note: str

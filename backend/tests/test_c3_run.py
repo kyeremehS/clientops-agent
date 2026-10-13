@@ -70,7 +70,9 @@ def _mock_llm(dims: dict) -> object:
                         "evidence_refs": ["art-1"],
                         "source_urls": ["http://93.184.216.34/0"],
                     }
-                ]
+                ],
+                "inconclusive": False,
+                "note": "",
             }
         else:
             prompt = body["messages"][0]["content"]

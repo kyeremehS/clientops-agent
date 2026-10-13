@@ -112,7 +112,13 @@ def test_research_writes_artifacts_and_maps_claims(session):
 def test_research_drops_unsourced_claims(session):
     """Claims without source_urls are discarded; none left → inconclusive."""
     db, lead_id = session
-    llm = _mock_llm({"claims": [{"claim": "Hunch.", "evidence_refs": [], "source_urls": []}]})
+    llm = _mock_llm(
+        {
+            "claims": [{"claim": "Hunch.", "evidence_refs": [], "source_urls": []}],
+            "inconclusive": False,
+            "note": "",
+        }
+    )
     result = run_research(lead_id, _lead(), _mock_search(), _mock_fetcher(), llm, db)
 
     assert result.inconclusive is True and result.claims == []

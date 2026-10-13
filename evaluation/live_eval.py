@@ -16,6 +16,7 @@ import argparse
 import json
 import sys
 import tempfile
+import time
 import traceback
 from datetime import datetime, timezone
 from pathlib import Path
@@ -137,6 +138,12 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--cases", default=str(REPO_ROOT / "evaluation" / "live_cases"))
     parser.add_argument("--limit", type=int, default=0)
     parser.add_argument("--out-dir", default="")
+    parser.add_argument(
+        "--pause-s",
+        type=float,
+        default=20.0,
+        help="Sleep between cases so free-tier rate limits recover.",
+    )
     args = parser.parse_args(argv if argv is not None else sys.argv[1:])
 
     paths = sorted(Path(args.cases).glob("*.json"))
@@ -153,8 +160,10 @@ def main(argv: list[str] | None = None) -> int:
     out.mkdir(parents=True, exist_ok=True)
 
     records = []
-    for path in paths:
+    for i, path in enumerate(paths):
         case = json.loads(path.read_text(encoding="utf-8"))
+        if i > 0 and args.pause_s > 0:
+            time.sleep(args.pause_s)
         print(f"running {case['id']} ...")
         try:
             result = run_case(case, search, fetcher, llm, settings.search_max_results)
