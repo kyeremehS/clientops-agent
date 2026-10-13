@@ -12,13 +12,14 @@ def test_research_schemas_parse_and_forbid_extra():
         evidence_refs=["art-1"],
         source_urls=["https://acme.test/"],
     )
-    result = ResearchResult(claims=[claim])
+    result = ResearchResult(claims=[claim], inconclusive=False, note="")
     assert result.claims[0].source_urls == ["https://acme.test/"]
     assert result.inconclusive is False
 
 
-def test_research_result_defaults_to_empty_not_null():
-    result = ResearchResult()
+def test_research_result_requires_all_fields():
+    """Strict contracts only: every field required, nothing defaulted."""
+    result = ResearchResult(claims=[], inconclusive=False, note="")
     assert result.claims == [] and result.note == ""
 
 
