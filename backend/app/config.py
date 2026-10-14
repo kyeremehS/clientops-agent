@@ -13,10 +13,11 @@ class Settings(BaseSettings):
     llm_provider: str = "openrouter"
     llm_model: str = "google/gemma-4-31b-it:free"
     openrouter_api_key: str = ""
+    openai_api_key: str = ""
     groq_api_key: str = ""
     llm_timeout_s: float = 30.0
     llm_max_retries: int = 3
-    llm_max_tokens: int = 2000
+    llm_max_tokens: int = 4000
     # Slack
     slack_bot_token: str = ""
     slack_channel_id: str = ""

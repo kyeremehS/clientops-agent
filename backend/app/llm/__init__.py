@@ -11,9 +11,12 @@ from app.llm.errors import (
     LLMValidationError,
 )
 from app.llm.groq import GroqClient, groq_client_from_settings
+from app.llm.openai import OpenAIClient, openai_client_from_settings
 
 __all__ = [
     "GroqClient",
+    "OpenAIClient",
+    "OpenRouterClient",
     "LLMBudgetExceededError",
     "LLMConfigError",
     "LLMError",
@@ -21,16 +24,24 @@ __all__ = [
     "LLMResponseError",
     "LLMTimeoutError",
     "LLMValidationError",
-    "OpenRouterClient",
     "client_from_settings",
     "groq_client_from_settings",
     "llm_client_from_settings",
+    "openai_client_from_settings",
 ]
 
 
-def llm_client_from_settings(settings) -> OpenRouterClient | GroqClient:
+def llm_client_from_settings(settings) -> OpenRouterClient | GroqClient | OpenAIClient:
     """Build the configured provider client. Unknown providers fail closed."""
     provider = getattr(settings, "llm_provider", "openrouter")
+    if provider == "openai":
+        return openai_client_from_settings(
+            api_key=settings.openai_api_key,
+            model=settings.llm_model,
+            timeout_s=settings.llm_timeout_s,
+            max_retries=settings.llm_max_retries,
+            max_tokens=settings.llm_max_tokens,
+        )
     if provider == "groq":
         return groq_client_from_settings(
             api_key=settings.groq_api_key,
@@ -47,4 +58,4 @@ def llm_client_from_settings(settings) -> OpenRouterClient | GroqClient:
             max_retries=settings.llm_max_retries,
             max_tokens=settings.llm_max_tokens,
         )
-    raise LLMConfigError(f"unknown LLM_PROVIDER: {provider!r} (openrouter|groq)")
+    raise LLMConfigError(f"unknown LLM_PROVIDER: {provider!r} (openrouter|groq|openai)")

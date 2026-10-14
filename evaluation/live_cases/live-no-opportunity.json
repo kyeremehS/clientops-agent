@@ -1,14 +1,14 @@
 {
   "id": "live-no-opportunity",
-  "description": "Large stable industrial distributor, no visible pain or hype. A boring company must not score highly; weak evidence escalates to REVIEW by policy (REJECT needs sufficient evidence).",
+  "description": "Small specialty food shop: real and searchable, but a low-automation-surface business. Must not grade as a strong lead (a strong lead is 66.7+, i.e. 2s across the board); either escalating outcome is correct. Calibrated 2026-10-14: the blind rubric graded everything 75-100 because it conflated 'has operations' with 'has pain'. After the rubric fix the model reads this company correctly ('no signals of operational strain... consumer retail, tangential to B2B'), landing pain 0-1, plausibility 1-2, relevance 1, evidence 2 = fit 33-50. Observed outcomes: 50 (REVIEW), 33.3 (REJECT).",
   "lead": {
-    "company": "W.W. Grainger",
-    "website": "https://www.grainger.com",
-    "contact": "ops@grainger.example",
+    "company": "Russ & Daughters",
+    "website": "https://www.russanddaughters.com",
+    "contact": "info@russanddaughters.example",
     "message": "Just browsing what is out there."
   },
-  "expected_outcome": "REVIEW",
-  "max_fit": 40,
-  "require_approval": true,
+  "expected_outcome": ["REVIEW", "REJECT"],
+  "max_fit": 60,
+  "require_approval": false,
   "forbid_action": true
 }

@@ -62,15 +62,7 @@ class OpenRouterClient:
     ) -> tuple[BaseModel, dict]:
         """Call the model and validate output. Returns (parsed_model, usage)."""
         schema = TypeAdapter(response_model).json_schema()
-        body = {
-            "model": self._model,
-            "messages": messages,
-            "max_tokens": self._max_tokens,
-            "response_format": {
-                "type": "json_schema",
-                "json_schema": {"name": schema_name, "strict": True, "schema": schema},
-            },
-        }
+        body = self._build_body(messages, schema_name, schema)
         raw, usage, finish_reason, latency_ms = self._post_with_retry(body)
         if finish_reason == "length":
             raise LLMResponseError(
@@ -98,8 +90,25 @@ class OpenRouterClient:
         try:
             parsed = TypeAdapter(response_model).validate_python(json.loads(raw))
         except (json.JSONDecodeError, ValidationError) as exc:
+            if not raw.strip():
+                raise LLMResponseError(
+                    "empty model content (reasoning consumed the completion budget; "
+                    "raise llm_max_tokens)"
+                )
             raise LLMValidationError(f"output failed {response_model.__name__} validation: {exc}")
         return parsed, usage
+
+    def _build_body(self, messages: list[dict], schema_name: str, schema: dict) -> dict:
+        """Chat-completions body. Subclasses override for endpoint differences."""
+        return {
+            "model": self._model,
+            "messages": messages,
+            "max_tokens": self._max_tokens,
+            "response_format": {
+                "type": "json_schema",
+                "json_schema": {"name": schema_name, "strict": True, "schema": schema},
+            },
+        }
 
     def _post_with_retry(self, body: dict) -> tuple[str, dict, str | None, int]:
         headers = {"Authorization": f"Bearer {self._api_key}", "Content-Type": "application/json"}
