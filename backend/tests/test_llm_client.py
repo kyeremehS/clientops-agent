@@ -132,6 +132,16 @@ def test_truncated_output_names_budget_not_validation():
         _client(handler).complete_json(MESSAGES, QualificationResult)
 
 
+def test_empty_content_names_budget_not_validation():
+    """Empty content → budget hint (reasoning consumed the completion cap)."""
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        return httpx.Response(200, json=_envelope(""))
+
+    with pytest.raises(LLMResponseError, match="llm_max_tokens"):
+        _client(handler).complete_json(MESSAGES, QualificationResult)
+
+
 def test_missing_api_key():
     with pytest.raises(LLMConfigError):
         OpenRouterClient(api_key="", model="m")

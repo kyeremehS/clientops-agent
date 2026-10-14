@@ -31,7 +31,7 @@ from sqlalchemy.orm import sessionmaker  # noqa: E402
 
 from app.config import settings  # noqa: E402
 from app.db.base import Base  # noqa: E402
-from app.db.models import Action, Lead, ResearchArtifact  # noqa: E402
+from app.db.models import Action, Lead, Qualification, ResearchArtifact  # noqa: E402
 from app.llm import llm_client_from_settings  # noqa: E402
 from app.orchestrator.runner import run_lead  # noqa: E402
 from app.tools.fetch import WebsiteFetcher  # noqa: E402
@@ -42,9 +42,12 @@ from search_eval.envkeys import load_dotenv_fallback  # noqa: E402
 def check_case(expectations: dict, result: dict) -> dict:
     """Compare a recorded run summary against expectations. No I/O."""
     failures: list[str] = []
-    if result["outcome"] != expectations["expected_outcome"]:
+    expected = expectations["expected_outcome"]
+    if isinstance(expected, str):
+        expected = [expected]
+    if result["outcome"] not in expected:
         failures.append(
-            f"outcome {result['outcome']} != expected {expectations['expected_outcome']}"
+            f"outcome {result['outcome']} != expected {'|'.join(expected)}"
         )
     min_fit = expectations.get("min_fit")
     if min_fit is not None and result["fit"] < min_fit:
@@ -88,6 +91,9 @@ def run_case(case: dict, search, fetcher, llm, max_results: int) -> dict:
                 for row in session.scalars(select(ResearchArtifact)).all()
             ]
             actions = session.query(Action).count()
+            qualification = session.scalar(
+                select(Qualification).where(Qualification.lead_id == lead.id)
+            )
             session.close()
             engine.dispose()  # release the sqlite file handle (Windows locks it)
         return {
@@ -97,6 +103,17 @@ def run_case(case: dict, search, fetcher, llm, max_results: int) -> dict:
             "approval_id": str(summary["approval_id"]) if summary["approval_id"] else None,
             "reasons": summary["reasons"],
             "claims": summary["claims"],
+            "dimensions": (
+                {
+                    "operational_pain": qualification.operational_pain,
+                    "automation_plausibility": qualification.automation_plausibility,
+                    "relevance": qualification.relevance,
+                    "evidence_quality": qualification.evidence_quality,
+                    "summary": qualification.summary,
+                }
+                if qualification is not None
+                else None
+            ),
             "artifact_urls": artifact_urls,
             "actions": actions,
         }
@@ -177,6 +194,7 @@ def main(argv: list[str] | None = None) -> int:
                 "reasons": [f"{type(exc).__name__}: {exc}"],
                 "traceback_tail": location[-2000:],
                 "claims": [],
+                "dimensions": None,
                 "artifact_urls": [],
                 "actions": 0,
             }

@@ -25,16 +25,16 @@ Provider comparison (informational, never gated):
 Relevance judgment is human — read `report.md`, record the verdict in
 `docs/decisions/0006-research-search-providers.md` before changing the default.
 
-Live pipeline eval (manual runs only — never CI, costs real credits):
-`python evaluation/live_eval.py` from the repo root.
+## Live eval (C4, manual)
 
-- `live_cases/*.json` — 3 real-company cases with loose expectations
-  (outcome, fit floor/ceiling, approval presence, no external action,
-  grounded citations). Fictional `.test` leads stay in `cases/` for the
-  deterministic gate; live needs searchable companies.
-- Runs each case through the real pipeline on scratch SQLite files and
-  persists `runs/live-<ts>/{<case>.json,summary.json}` (gitignored).
-- Loose by design: the live web shifts, so a mismatch exits nonzero for
-  human triage, never as a build failure. A boring company must score low
-  (fit ceiling); weak evidence escalates to REVIEW by policy (REJECT needs
-  sufficient evidence, so thin-evidence cases never expect REJECT).
+- `evaluation/live_eval.py` + `evaluation/live_cases/*.json`: the 3 case
+  shapes against real companies through the real pipeline (live search +
+  live LLM + real websites) on scratch databases.
+- Loose expectations (outcome, fit floor/ceiling, approval, no action,
+  grounded citations). `expected_outcome` may be a list — both escalating
+  outcomes are correct for a weak-signal company.
+- Pinned: `LLM_PROVIDER=openai` + `gpt-5-mini` (reasoning model: cap is
+  `max_completion_tokens`, default budget raised to 4000 because reasoning
+  eats most of the completion). Status: 3/3 ×2 consecutive passes
+  (2026-10-14). A mismatch exits nonzero for human triage — the live web
+  shifts, so results are evidence, never a gate.

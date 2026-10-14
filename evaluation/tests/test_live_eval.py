@@ -42,6 +42,13 @@ def test_check_case_fit_floor():
     assert any("33.3" in f for f in verdict["failures"])
 
 
+def test_check_case_accepts_outcome_list():
+    """Both escalating outcomes are correct for a thin-evidence company."""
+    for outcome in ("REVIEW", "REJECT"):
+        verdict = check_case(_expect(expected_outcome=["REVIEW", "REJECT"]), _result(outcome=outcome))
+        assert verdict["passed"] is True
+
+
 def test_check_case_fit_ceiling():
     """A boring company scoring highly fails the inflation check."""
     verdict = check_case(_expect(max_fit=40), _result(fit=66.7))
