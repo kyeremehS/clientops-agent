@@ -14,7 +14,7 @@ from app.agents.qualification.runner import _empty_result, run_qualification, pe
 from app.agents.research.runner import run_research
 from app.db.events import append_audit_event, create_approval
 from app.db.models import Decision, Lead
-from app.llm import GroqClient, OpenRouterClient
+from app.llm import GroqClient, OpenAIClient, OpenRouterClient
 from app.orchestrator.states import lead_state
 from app.policy import REVIEW, decide
 from app.policy.safety import SafetyTracker, check
@@ -32,7 +32,7 @@ def run_lead(
     session: Session,
     search: SearchProvider,
     fetcher: WebsiteFetcher,
-    llm: OpenRouterClient | GroqClient,
+    llm: OpenRouterClient | GroqClient | OpenAIClient,
     max_results: int = 5,
     tool_budget: int = 30,
 ) -> dict:

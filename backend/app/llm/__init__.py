@@ -34,6 +34,7 @@ __all__ = [
 def llm_client_from_settings(settings) -> OpenRouterClient | GroqClient | OpenAIClient:
     """Build the configured provider client. Unknown providers fail closed."""
     provider = getattr(settings, "llm_provider", "openrouter")
+    budget = getattr(settings, "run_max_total_tokens", None)
     if provider == "openai":
         return openai_client_from_settings(
             api_key=settings.openai_api_key,
@@ -41,6 +42,7 @@ def llm_client_from_settings(settings) -> OpenRouterClient | GroqClient | OpenAI
             timeout_s=settings.llm_timeout_s,
             max_retries=settings.llm_max_retries,
             max_tokens=settings.llm_max_tokens,
+            max_total_tokens=budget,
         )
     if provider == "groq":
         return groq_client_from_settings(
@@ -49,6 +51,7 @@ def llm_client_from_settings(settings) -> OpenRouterClient | GroqClient | OpenAI
             timeout_s=settings.llm_timeout_s,
             max_retries=settings.llm_max_retries,
             max_tokens=settings.llm_max_tokens,
+            max_total_tokens=budget,
         )
     if provider == "openrouter":
         return client_from_settings(
@@ -57,5 +60,6 @@ def llm_client_from_settings(settings) -> OpenRouterClient | GroqClient | OpenAI
             timeout_s=settings.llm_timeout_s,
             max_retries=settings.llm_max_retries,
             max_tokens=settings.llm_max_tokens,
+            max_total_tokens=budget,
         )
     raise LLMConfigError(f"unknown LLM_PROVIDER: {provider!r} (openrouter|groq|openai)")

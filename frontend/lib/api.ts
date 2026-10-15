@@ -8,11 +8,16 @@ export type Approval = {
 };
 
 const BASE = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8000";
+const KEY = process.env.NEXT_PUBLIC_API_KEY;
 
 async function request(path: string, init?: RequestInit) {
   const response = await fetch(`${BASE}${path}`, {
     ...init,
-    headers: { "Content-Type": "application/json", ...(init?.headers ?? {}) },
+    headers: {
+      "Content-Type": "application/json",
+      ...(KEY ? { Authorization: `Bearer ${KEY}` } : {}),
+      ...(init?.headers ?? {}),
+    },
   });
   if (!response.ok) {
     const body = await response.json().catch(() => ({}));

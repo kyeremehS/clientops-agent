@@ -24,7 +24,12 @@ class OpenAIClient(OpenRouterClient):
 
 
 def openai_client_from_settings(
-    api_key: str, model: str, timeout_s: float, max_retries: int, max_tokens: int
+    api_key: str,
+    model: str,
+    timeout_s: float,
+    max_retries: int,
+    max_tokens: int,
+    max_total_tokens: int | None = None,
 ) -> OpenAIClient:
     return OpenAIClient(
         api_key=api_key,
@@ -32,4 +37,5 @@ def openai_client_from_settings(
         timeout_s=timeout_s,
         max_retries=max_retries,
         max_tokens=max_tokens,
+        max_total_tokens=max_total_tokens,
     )

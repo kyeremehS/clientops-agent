@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 
 from app.config import settings
 from app.db.base import get_session_factory
-from app.llm import GroqClient, OpenRouterClient, llm_client_from_settings
+from app.llm import GroqClient, OpenAIClient, OpenRouterClient, llm_client_from_settings
 from app.tools.fetch import WebsiteFetcher
 from app.tools.search import SearchProvider, create_search_provider
 from app.tools.slack import SlackSender
@@ -76,7 +76,7 @@ def get_website_fetcher() -> WebsiteFetcher:
     return _fetcher
 
 
-def get_llm_client() -> OpenRouterClient | GroqClient:
+def get_llm_client() -> OpenRouterClient | GroqClient | OpenAIClient:
     global _llm
     if _llm is None:
         _llm = llm_client_from_settings(settings)

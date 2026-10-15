@@ -37,6 +37,9 @@ class Settings(BaseSettings):
     fetch_timeout_s: float = 15.0
     fetch_max_bytes: int = 1_000_000
     fetch_max_chars: int = 20_000
+    # Budgets (per run; token budget off unless set — configure for prod)
+    run_max_tool_calls: int = 30
+    run_max_total_tokens: int | None = None
 
     model_config = {
         "env_prefix": "",

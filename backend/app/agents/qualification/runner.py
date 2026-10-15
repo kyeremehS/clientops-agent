@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 
 from app.agents.qualification.prompts import build_qualification_prompt
 from app.db.models import Qualification, ResearchArtifact
-from app.llm import GroqClient, OpenRouterClient
+from app.llm import GroqClient, OpenAIClient, OpenRouterClient
 from app.policy import score
 from app.schemas.leads import LeadCreate
 from app.schemas.qualification import QualificationResult
@@ -35,7 +35,7 @@ def persist_result(lead_id: UUID, session: Session) -> tuple[QualificationResult
 def run_qualification(
     lead_id: UUID,
     lead: LeadCreate,
-    llm: OpenRouterClient | GroqClient,
+    llm: OpenRouterClient | GroqClient | OpenAIClient,
     session: Session,
 ) -> tuple[QualificationResult, float]:
     """Rate dimensions, persist the qualification row, return (result, fit).

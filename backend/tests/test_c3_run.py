@@ -164,6 +164,17 @@ def test_unknown_lead_raises(db):
         )
 
 
+def test_zero_tool_budget_degrades_to_review(db):
+    """Budget 0 denies every tool call: inconclusive research, REVIEW, fit 0."""
+    session, lead_id = db
+    result = run_lead(
+        lead_id, session, _mock_search(), _mock_fetcher(), _mock_llm(_dims()), tool_budget=0
+    )
+
+    assert result["outcome"] == "REVIEW" and result["fit"] == 0.0
+    assert result["state"] == "review_pending"
+
+
 def test_states_walk_rows(db):
     """Derived state follows rows present: new → researched → qualified → review_pending."""
     session, lead_id = db
