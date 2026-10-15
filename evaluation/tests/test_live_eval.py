@@ -1,6 +1,8 @@
 """Live-eval check helpers. Canned summaries only — the live path never runs here."""
 
-from live_eval import check_case
+import pytest
+
+from live_eval import ORDERING_MARGIN, check_case, check_ordering
 
 
 def _result(**overrides):
@@ -43,10 +45,59 @@ def test_check_case_fit_floor():
 
 
 def test_check_case_accepts_outcome_list():
-    """Both escalating outcomes are correct for a thin-evidence company."""
+    """Both escalating outcomes are correct for a weak-signal company."""
     for outcome in ("REVIEW", "REJECT"):
-        verdict = check_case(_expect(expected_outcome=["REVIEW", "REJECT"]), _result(outcome=outcome))
+        verdict = check_case(
+            _expect(expected_outcome=["REVIEW", "REJECT"]), _result(outcome=outcome)
+        )
         assert verdict["passed"] is True
+
+
+def _record(case_id: str, role: str, fit: float, outcome: str = "REVIEW") -> dict:
+    return {
+        "case": case_id,
+        "role": role,
+        "expectations": {"id": case_id, "role": role},
+        "result": _result(outcome=outcome, fit=fit),
+        "passed": True,
+        "failures": [],
+    }
+
+
+def test_ordering_passes_when_strong_beats_weak():
+    """The discriminator: strong-fit leads must outscore weak-fit ones."""
+    records = [
+        _record("s1", "strong", 90.0),
+        _record("w1", "weak", 45.0),
+        _record("s2", "strong", 70.0),
+        _record("w2", "weak", 50.0),
+    ]
+    verdict = check_ordering(records)
+    assert verdict["applicable"] and verdict["passed"] is True
+    assert verdict["margin"] == pytest.approx(32.5, abs=0.1)
+
+
+def test_ordering_fails_when_no_discrimination():
+    """Everything scoring alike means the system cannot tell lead quality."""
+    verdict = check_ordering(
+        [_record("s1", "strong", 80.0), _record("w1", "weak", 78.0)]
+    )
+    assert verdict["applicable"] and verdict["passed"] is False
+    assert verdict["margin"] < ORDERING_MARGIN
+
+
+def test_ordering_skipped_without_both_roles():
+    """Thin-evidence-only runs have nothing to compare."""
+    verdict = check_ordering([_record("t1", "thin", 0.0)])
+    assert verdict["applicable"] is False
+
+
+def test_check_case_artifact_urls_are_isolated_set():
+    """Grounding must compare against fetched artifacts only."""
+    result = _result(
+        claims=[{"claim": "x", "source_urls": ["https://a.test"]}], artifact_urls=[]
+    )
+    assert check_case(_expect(), result)["passed"] is False
 
 
 def test_check_case_fit_ceiling():

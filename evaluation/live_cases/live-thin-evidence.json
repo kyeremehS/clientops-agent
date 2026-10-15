@@ -1,0 +1,16 @@
+{
+  "id": "live-thin-evidence",
+  "role": "thin",
+  "expectation_basis": "blind",
+  "expectation_note": "Pre-registered prior, no prior live run: a nonexistent company yields nothing citable about it, so the research step should return inconclusive and the qualification step should not be called — exercising the INCONCLUSIVE path that has never run live. Fit should sit at/near 0 and the outcome should still escalate to REVIEW with an approval, never auto-action.",
+  "lead": {
+    "company": "Verendel Therapeutics",
+    "website": "https://verendel-therapeutics.invalid",
+    "contact": "ceo@verendel.example",
+    "message": "We handle thousands of clinical trials daily and our operations are drowning."
+  },
+  "expected_outcome": "REVIEW",
+  "max_fit": 40,
+  "require_approval": true,
+  "forbid_action": true
+}
