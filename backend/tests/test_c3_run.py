@@ -92,8 +92,7 @@ def _mock_llm(dims: dict) -> object:
     )
 
 
-def _dims(pain=2, plaus=2, rel=2, eq=2) -> dict:
-    return {
+def _dims(pain=2, plaus=2, rel=2, eq=2) -> dict:    return {
         "operational_pain": pain,
         "automation_plausibility": plaus,
         "relevance": rel,
@@ -124,6 +123,32 @@ def test_reject_path_creates_no_approval(db):
     assert result["outcome"] == "REJECT" and result["approval_id"] is None
     assert result["state"] == "rejected"
     assert session.scalar(select(Approval).where(Approval.lead_id == lead_id)) is None
+
+
+def test_inconclusive_research_skips_qualification(db):
+    """No grounded claims → qualification skipped, REVIEW + approval, fit 0."""
+    from app.db.models import Qualification
+
+    session, lead_id = db
+
+    class _SilentLLM:
+        def complete_json(self, *args, **kwargs):
+            raise AssertionError("no grounded claims, so the model must not be called")
+
+    result = run_lead(
+        lead_id,
+        session,
+        MockSearchProvider(results=[]),
+        _mock_fetcher(),
+        _SilentLLM(),
+    )
+
+    assert result["outcome"] == "REVIEW" and result["approval_id"] is not None
+    assert result["fit"] == 0.0 and result["claims"] == []
+    row = session.scalar(select(Qualification).where(Qualification.lead_id == lead_id))
+    assert row is not None and row.summary == (
+        "no sufficiently supported automation opportunity found"
+    )
 
 
 def test_unknown_lead_raises(db):

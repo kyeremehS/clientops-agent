@@ -14,6 +14,7 @@ build and never auto-changes code. Costs real provider credits per run.
 
 import argparse
 import json
+import statistics
 import sys
 import tempfile
 import time
@@ -23,6 +24,11 @@ from pathlib import Path
 from uuid import UUID
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
+
+# Strong-fit cases must outscore weak-fit cases by this much. A relative
+# assertion: the live web shifts and model wording drifts, but a system
+# that discriminates good leads from bad keeps this margin.
+ORDERING_MARGIN = 15.0
 sys.path.insert(0, str(REPO_ROOT / "backend"))
 sys.path.insert(0, str(REPO_ROOT / "evaluation"))
 
@@ -37,6 +43,33 @@ from app.orchestrator.runner import run_lead  # noqa: E402
 from app.tools.fetch import WebsiteFetcher  # noqa: E402
 from app.tools.search import create_search_provider  # noqa: E402
 from search_eval.envkeys import load_dotenv_fallback  # noqa: E402
+
+
+def check_ordering(records: list[dict]) -> dict:
+    """Cross-case discrimination: strong-fit leads must outscore weak-fit ones.
+
+    The per-case fit bands are hand-tuned to observed values and generalize
+    poorly. This is the assertion that survives: if the system can tell a
+    strong lead from a weak one at all, the group means keep their order.
+    """
+    roles: dict[str, list[float]] = {"strong": [], "weak": []}
+    for record in records:
+        role = record.get("expectations", {}).get("role")
+        if role in roles:
+            roles[role].append(float(record["result"]["fit"]))
+    if not roles["strong"] or not roles["weak"]:
+        return {"applicable": False, "reason": "needs both strong and weak cases"}
+    strong_mean = round(statistics.mean(roles["strong"]), 1)
+    weak_mean = round(statistics.mean(roles["weak"]), 1)
+    margin = round(strong_mean - weak_mean, 1)
+    return {
+        "applicable": True,
+        "strong_mean": strong_mean,
+        "weak_mean": weak_mean,
+        "margin": margin,
+        "required_margin": ORDERING_MARGIN,
+        "passed": margin >= ORDERING_MARGIN,
+    }
 
 
 def check_case(expectations: dict, result: dict) -> dict:
@@ -154,6 +187,11 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Live pipeline eval (manual, costs credits).")
     parser.add_argument("--cases", default=str(REPO_ROOT / "evaluation" / "live_cases"))
     parser.add_argument("--limit", type=int, default=0)
+    parser.add_argument(
+        "--only",
+        default="",
+        help="Comma-separated case ids to run (for triage reruns).",
+    )
     parser.add_argument("--out-dir", default="")
     parser.add_argument(
         "--pause-s",
@@ -166,6 +204,9 @@ def main(argv: list[str] | None = None) -> int:
     paths = sorted(Path(args.cases).glob("*.json"))
     if args.limit and args.limit > 0:
         paths = paths[: args.limit]
+    if args.only.strip():
+        wanted = {part.strip() for part in args.only.split(",") if part.strip()}
+        paths = [p for p in paths if p.stem in wanted]
     if not paths:
         print("no live cases found")
         return 1
@@ -211,11 +252,35 @@ def main(argv: list[str] | None = None) -> int:
         records.append(record)
 
     passed = sum(1 for r in records if r["passed"])
+    ordering = check_ordering(records)
+    if ordering["applicable"]:
+        ordering_ok = ordering["passed"]
+        print(
+            f"ordering: strong_mean={ordering['strong_mean']} "
+            f"weak_mean={ordering['weak_mean']} margin={ordering['margin']} "
+            f"(required >= {ordering['required_margin']}) -> "
+            f"{'PASS' if ordering_ok else 'FAIL'}"
+        )
+    else:
+        ordering_ok = True
+        print(f"ordering: skipped ({ordering['reason']})")
     (out / "summary.json").write_text(
-        json.dumps({"passed": passed, "total": len(records)}, indent=2), encoding="utf-8")
-    print(f"summary: {passed}/{len(records)} passed → {out}")
+        json.dumps(
+            {
+                "passed": passed,
+                "total": len(records),
+                "ordering": ordering,
+                "ordering_passed": ordering_ok,
+            },
+            indent=2,
+        ),
+        encoding="utf-8",
+    )
+    clean = passed == len(records) and ordering_ok
+    print(f"summary: {passed}/{len(records)} passed | ordering "
+          f"{'ok' if ordering_ok else 'FAILED'} -> {out}")
     print("Mismatches need human triage (live web shifts). Never gate CI on this script.")
-    return 0 if passed == len(records) else 1
+    return 0 if clean else 1
 
 
 if __name__ == "__main__":

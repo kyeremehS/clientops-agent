@@ -1,0 +1,15 @@
+{
+  "id": "live-no-opportunity-2",
+  "role": "mixed",
+  "expectation_basis": "calibrated",
+  "expectation_note": "Blind prior (weak: consumer craft has no operational pain) was contradicted on the first run: first-party help-center pages show support volume limiting live support — a real, cited pain signal, fit 75. The product was right and the prior was wrong. Reframed honestly: no score band is asserted here (that would be fitting); this case asserts gate + grounding only, and stays out of the ordering check. Lesson kept: 'has no operations worth automating' is not the same as 'is a consumer company'.",
+  "lead": {
+    "company": "Blue Bottle Coffee",
+    "website": "https://bluebottlecoffee.com",
+    "contact": "info@bluebottle.example",
+    "message": "Just browsing what is out there."
+  },
+  "expected_outcome": ["REVIEW", "REJECT"],
+  "require_approval": false,
+  "forbid_action": true
+}

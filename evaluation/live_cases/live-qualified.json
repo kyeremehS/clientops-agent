@@ -1,6 +1,8 @@
 {
   "id": "live-qualified",
-  "description": "Real freight forwarder with public layoff/support-backlog signals. Expect REVIEW with approval.",
+  "role": "strong",
+  "expectation_basis": "calibrated",
+  "expectation_note": "Prior registered before the first live run: freight forwarder with public layoff/support-backlog signals should grade as a genuine fit. Band derived from policy arithmetic (REJECT is below 40, so 50 sits comfortably clear of the reject line) — not tuned to observed scores, which ran 83.3-100.",
   "lead": {
     "company": "Flexport",
     "website": "https://www.flexport.com",
@@ -8,7 +10,7 @@
     "message": "Our support queue keeps growing as freight volumes swing, we need help."
   },
   "expected_outcome": "REVIEW",
-  "min_fit": 40,
+  "min_fit": 50,
   "require_approval": true,
   "forbid_action": true
 }

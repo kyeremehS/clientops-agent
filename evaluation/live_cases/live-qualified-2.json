@@ -1,0 +1,16 @@
+{
+  "id": "live-qualified-2",
+  "role": "strong",
+  "expectation_basis": "blind",
+  "expectation_note": "Pre-registered prior, no prior live run: B2B identity SaaS with a publicly documented breach and support-trust strain should grade as a genuine fit. If the first run contradicts this, the prior is recorded as wrong and the threshold stays.",
+  "lead": {
+    "company": "Okta",
+    "website": "https://www.okta.com",
+    "contact": "ops@okta.example",
+    "message": "Support volume grew a lot after the incident and customers keep escalating, we need help."
+  },
+  "expected_outcome": "REVIEW",
+  "min_fit": 50,
+  "require_approval": true,
+  "forbid_action": true
+}
