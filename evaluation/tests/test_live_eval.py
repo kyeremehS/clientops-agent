@@ -56,7 +56,6 @@ def test_check_case_accepts_outcome_list():
 def _record(case_id: str, role: str, fit: float, outcome: str = "REVIEW") -> dict:
     return {
         "case": case_id,
-        "role": role,
         "expectations": {"id": case_id, "role": role},
         "result": _result(outcome=outcome, fit=fit),
         "passed": True,

@@ -54,7 +54,7 @@ def check_ordering(records: list[dict]) -> dict:
     """
     roles: dict[str, list[float]] = {"strong": [], "weak": []}
     for record in records:
-        role = record.get("role")
+        role = record.get("expectations", {}).get("role")
         if role in roles:
             roles[role].append(float(record["result"]["fit"]))
     if not roles["strong"] or not roles["weak"]:
