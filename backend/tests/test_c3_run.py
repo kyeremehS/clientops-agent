@@ -233,6 +233,7 @@ def test_guard_denial_skips_sources(db):
 def client(tmp_path, monkeypatch):
     url = f"sqlite:///{tmp_path}/api.db"
     monkeypatch.setattr(settings, "database_url", url)
+    monkeypatch.setattr(settings, "api_key", "test-key")
     import app.api.deps as deps
 
     monkeypatch.setattr(deps, "_factory", None)
@@ -245,7 +246,7 @@ def client(tmp_path, monkeypatch):
     app.dependency_overrides[get_search_provider] = lambda: search
     app.dependency_overrides[get_website_fetcher] = lambda: fetcher
     app.dependency_overrides[get_llm_client] = lambda: llm
-    with TestClient(app) as test_client:
+    with TestClient(app, headers={"Authorization": "Bearer test-key"}) as test_client:
         yield test_client
     app.dependency_overrides.clear()
 

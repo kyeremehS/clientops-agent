@@ -35,6 +35,7 @@ class FakeSender:
 def wired(tmp_path, monkeypatch):
     url = f"sqlite:///{tmp_path}/test.db"
     monkeypatch.setattr(settings, "database_url", url)
+    monkeypatch.setattr(settings, "api_key", "test-key")
     monkeypatch.setattr(settings, "slack_channel_id", "C-test")
     engine = create_engine(url, future=True)
     factory = sessionmaker(bind=engine, expire_on_commit=False, future=True)
@@ -53,7 +54,7 @@ def wired(tmp_path, monkeypatch):
     sender = FakeSender()
     app.dependency_overrides[get_session] = override_session
     app.dependency_overrides[get_slack_sender] = lambda: sender
-    with TestClient(app) as test_client:
+    with TestClient(app, headers={"Authorization": "Bearer test-key"}) as test_client:
         yield test_client, sender, engine
     app.dependency_overrides.clear()
 

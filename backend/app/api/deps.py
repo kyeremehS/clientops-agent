@@ -2,6 +2,7 @@
 
 from collections.abc import Iterator
 
+from fastapi import Header, HTTPException
 from sqlalchemy.orm import Session
 
 from app.config import settings
@@ -31,6 +32,12 @@ def get_session() -> Iterator[Session]:
         raise
     finally:
         session.close()
+
+
+def require_api_key(authorization: str | None = Header(default=None)) -> None:
+    """Shared-secret gate. Empty API_KEY means dev-open (localhost only)."""
+    if settings.api_key and authorization != f"Bearer {settings.api_key}":
+        raise HTTPException(status_code=401, detail="unauthorized")
 
 
 def get_slack_sender() -> SlackSender:

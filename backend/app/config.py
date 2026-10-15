@@ -7,6 +7,8 @@ from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
     app_name: str = "clientops-agent"
+    # API
+    api_key: str = ""
     # Database
     database_url: str = "postgresql://postgres:postgres@localhost:5432/clientops"
     # LLM
