@@ -187,6 +187,11 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Live pipeline eval (manual, costs credits).")
     parser.add_argument("--cases", default=str(REPO_ROOT / "evaluation" / "live_cases"))
     parser.add_argument("--limit", type=int, default=0)
+    parser.add_argument(
+        "--only",
+        default="",
+        help="Comma-separated case ids to run (for triage reruns).",
+    )
     parser.add_argument("--out-dir", default="")
     parser.add_argument(
         "--pause-s",
@@ -199,6 +204,9 @@ def main(argv: list[str] | None = None) -> int:
     paths = sorted(Path(args.cases).glob("*.json"))
     if args.limit and args.limit > 0:
         paths = paths[: args.limit]
+    if args.only.strip():
+        wanted = {part.strip() for part in args.only.split(",") if part.strip()}
+        paths = [p for p in paths if p.stem in wanted]
     if not paths:
         print("no live cases found")
         return 1
