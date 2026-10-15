@@ -10,7 +10,7 @@ from uuid import UUID
 
 from sqlalchemy.orm import Session
 
-from app.agents.qualification.runner import run_qualification
+from app.agents.qualification.runner import _empty_result, run_qualification, persist_result
 from app.agents.research.runner import run_research
 from app.db.events import append_audit_event, create_approval
 from app.db.models import Decision, Lead
@@ -56,8 +56,23 @@ def run_lead(
         "research.completed",
         payload={"claims": len(research.claims), "inconclusive": research.inconclusive},
     )
-    qualification, fit = run_qualification(lead_id, lead_in, llm, session)
-    append_audit_event(session, lead_id, "qualification.completed", payload={"fit": round(fit, 1)})
+    if research.inconclusive:
+        # No claim survived grounding, so there is nothing validated to
+        # reason over. Skip qualification entirely: rating evidence about a
+        # company the search engine confused with our lead produced a
+        # confident lead for the wrong company (live eval, 2026-10-15).
+        append_audit_event(
+            session,
+            lead_id,
+            "qualification.skipped",
+            payload={"reason": research.note or "research_inconclusive"},
+        )
+        qualification, fit = persist_result(lead_id, session)
+    else:
+        qualification, fit = run_qualification(lead_id, lead_in, llm, session)
+        append_audit_event(
+            session, lead_id, "qualification.completed", payload={"fit": round(fit, 1)}
+        )
     outcome, reasons = decide(
         {
             "operational_pain": qualification.operational_pain,

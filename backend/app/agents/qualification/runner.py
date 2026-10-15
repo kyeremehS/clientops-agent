@@ -15,6 +15,23 @@ from app.schemas.qualification import QualificationResult
 _NO_SUPPORT_SUMMARY = "no sufficiently supported automation opportunity found"
 
 
+def _empty_result() -> QualificationResult:
+    """All-zero dims with the fixed sentence. No model call."""
+    return QualificationResult(
+        operational_pain=0,
+        automation_plausibility=0,
+        relevance=0,
+        evidence_quality=0,
+        supporting_evidence_ids=[],
+        summary=_NO_SUPPORT_SUMMARY,
+    )
+
+
+def persist_result(lead_id: UUID, session: Session) -> tuple[QualificationResult, float]:
+    """Persist the all-zero 'no support' result without calling the model."""
+    return _persist(lead_id, _empty_result(), session)
+
+
 def run_qualification(
     lead_id: UUID,
     lead: LeadCreate,
@@ -33,15 +50,7 @@ def run_qualification(
     )
     known_ids = {str(row.id) for row in rows}
     if not rows:
-        result = QualificationResult(
-            operational_pain=0,
-            automation_plausibility=0,
-            relevance=0,
-            evidence_quality=0,
-            supporting_evidence_ids=[],
-            summary=_NO_SUPPORT_SUMMARY,
-        )
-        return _persist(lead_id, result, session)
+        return _persist(lead_id, _empty_result(), session)
 
     evidence = [{"id": str(r.id), "url": r.source_url, "text": r.content} for r in rows]
     parsed, _ = llm.complete_json(

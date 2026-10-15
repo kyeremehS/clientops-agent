@@ -109,6 +109,55 @@ def test_research_writes_artifacts_and_maps_claims(session):
     assert all(len(r.content_hash) == 64 and "40 trucks" in r.content for r in rows)
 
 
+def test_research_drops_claims_citing_unfetched_urls(session):
+    """Hallucinated grounding: a cited URL outside fetched evidence is dropped."""
+    db, lead_id = session
+    llm = _mock_llm(
+        {
+            "claims": [
+                {
+                    "claim": "Real.",
+                    "evidence_refs": ["art-1"],
+                    "source_urls": ["http://93.184.216.34/"],
+                },
+                {
+                    "claim": "Invented.",
+                    "evidence_refs": [],
+                    "source_urls": ["https://okta.com/newsroom/never-fetched"],
+                },
+            ],
+            "inconclusive": False,
+            "note": "",
+        }
+    )
+    result = run_research(lead_id, _lead(), _mock_search(), _mock_fetcher(), llm, db)
+
+    assert [c.claim for c in result.claims] == ["Real."]
+    assert result.inconclusive is False
+
+
+def test_research_all_claims_unfounded_is_inconclusive(session):
+    """Every claim citing outside evidence → inconclusive, nothing invented."""
+    db, lead_id = session
+    llm = _mock_llm(
+        {
+            "claims": [
+                {
+                    "claim": "Borrowed.",
+                    "evidence_refs": [],
+                    "source_urls": ["https://memory.example/page"],
+                }
+            ],
+            "inconclusive": False,
+            "note": "",
+        }
+    )
+    result = run_research(lead_id, _lead(), _mock_search(), _mock_fetcher(), llm, db)
+
+    assert result.inconclusive is True and result.claims == []
+    assert "outside fetched evidence" in result.note
+
+
 def test_research_drops_unsourced_claims(session):
     """Claims without source_urls are discarded; none left → inconclusive."""
     db, lead_id = session

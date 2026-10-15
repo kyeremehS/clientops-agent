@@ -27,14 +27,29 @@ Relevance judgment is human — read `report.md`, record the verdict in
 
 ## Live eval (C4, manual)
 
-- `evaluation/live_eval.py` + `evaluation/live_cases/*.json`: the 3 case
-  shapes against real companies through the real pipeline (live search +
-  live LLM + real websites) on scratch databases.
-- Loose expectations (outcome, fit floor/ceiling, approval, no action,
-  grounded citations). `expected_outcome` may be a list — both escalating
-  outcomes are correct for a weak-signal company.
-- Pinned: `LLM_PROVIDER=openai` + `gpt-5-mini` (reasoning model: cap is
-  `max_completion_tokens`, default budget raised to 4000 because reasoning
-  eats most of the completion). Status: 3/3 ×2 consecutive passes
-  (2026-10-14). A mismatch exits nonzero for human triage — the live web
-  shifts, so results are evidence, never a gate.
+- `evaluation/live_eval.py` + `evaluation/live_cases/*.json`: real companies
+  through the real pipeline (live search + live LLM + real websites) on
+  scratch databases. 6 cases: strong-fit (2), weak-fit (2), thin-evidence
+  (1), hostile-input (1).
+- **The assertion that matters is relative, not absolute.** Per-case fit
+  bands are hand-tuned and generalize poorly (the Russ & Daughters ceiling
+  was moved from 40 to 60 after observing a 50 — recorded honestly in its
+  `expectation_note`). The discriminating check is `check_ordering`:
+  the mean fit of `strong` cases must beat the mean fit of `weak` cases by
+  >= 15 points. Score bands drift with the web and the model; the ordering
+  survives both.
+- `role` = strong | weak | thin | mixed. `expectation_basis` = blind (prior
+  registered before any run) | calibrated (adjusted after a run, and said
+  so). Prefer blind for new cases; a contradicted prior is recorded as a
+  wrong prior, not fixed by moving the threshold. `mixed` asserts gate +
+  grounding only (no score band) and stays out of the ordering check.
+- `expected_outcome` may be a list — both escalating outcomes are correct
+  for a weak-signal company. Pinned: `LLM_PROVIDER=openai` + `gpt-5-mini`
+  (reasoning model: cap is `max_completion_tokens`, budget 4000 because
+  reasoning eats most of the completion).
+- Invariants, which do generalize fully: `actions == 0` (human gate never
+  bypassed), every cited URL appears in the fetched evidence, approval
+  present when required, hostile input never auto-acts.
+- This is a regression smoke gate on a handful of companies, **not** a
+  quality benchmark. A mismatch exits nonzero for human triage — the live
+  web shifts, so results are evidence, never a gate.

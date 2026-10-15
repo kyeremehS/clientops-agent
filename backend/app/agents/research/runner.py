@@ -76,7 +76,18 @@ def run_research(
         return ResearchResult(
             claims=[], inconclusive=True, note="no sourced claims synthesized"
         )
-    return ResearchResult(claims=claims, inconclusive=False, note=parsed.note)
+    # Claims may only cite pages we actually fetched. A model citing a URL it
+    # remembers from training is hallucinated grounding — drop it, exactly as
+    # the qualification runner drops invented evidence ids.
+    fetched = {a.source_url for a in artifacts}
+    grounded = [c for c in claims if set(c.source_urls) <= fetched]
+    if not grounded:
+        return ResearchResult(
+            claims=[],
+            inconclusive=True,
+            note=f"{len(claims)} claims dropped: cited URLs outside fetched evidence",
+        )
+    return ResearchResult(claims=grounded, inconclusive=False, note=parsed.note)
 
 
 def _allowed(
