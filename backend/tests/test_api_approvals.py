@@ -21,7 +21,6 @@ def client(tmp_path, monkeypatch):
     url = f"sqlite:///{tmp_path}/test.db"
     monkeypatch.setattr(settings, "database_url", url)
     engine = create_engine(url, future=True)
-    Base.metadata.create_all(engine)
     factory = sessionmaker(bind=engine, expire_on_commit=False, future=True)
 
     def override():

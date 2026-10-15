@@ -251,8 +251,8 @@ def client(tmp_path, monkeypatch):
 
 
 def _session_override(tmp_path, url):
+    # Schema comes from lifespan migrations on TestClient startup — no create_all.
     engine = create_engine(url, future=True)
-    Base.metadata.create_all(engine)
     factory = sessionmaker(bind=engine, expire_on_commit=False, future=True)
 
     def override():

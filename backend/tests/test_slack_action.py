@@ -37,7 +37,6 @@ def wired(tmp_path, monkeypatch):
     monkeypatch.setattr(settings, "database_url", url)
     monkeypatch.setattr(settings, "slack_channel_id", "C-test")
     engine = create_engine(url, future=True)
-    Base.metadata.create_all(engine)
     factory = sessionmaker(bind=engine, expire_on_commit=False, future=True)
 
     def override_session():
