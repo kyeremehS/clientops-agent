@@ -20,8 +20,8 @@ from app.main import app
 def client(tmp_path, monkeypatch):
     url = f"sqlite:///{tmp_path}/test.db"
     monkeypatch.setattr(settings, "database_url", url)
+    monkeypatch.setattr(settings, "api_key", "test-key")
     engine = create_engine(url, future=True)
-    Base.metadata.create_all(engine)
     factory = sessionmaker(bind=engine, expire_on_commit=False, future=True)
 
     def override():
@@ -36,7 +36,7 @@ def client(tmp_path, monkeypatch):
             session.close()
 
     app.dependency_overrides[get_session] = override
-    with TestClient(app) as test_client:
+    with TestClient(app, headers={"Authorization": "Bearer test-key"}) as test_client:
         yield test_client
     app.dependency_overrides.clear()
 

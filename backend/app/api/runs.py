@@ -5,15 +5,21 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
-from app.api.deps import get_llm_client, get_search_provider, get_session, get_website_fetcher
+from app.api.deps import (
+    get_llm_client,
+    get_search_provider,
+    get_session,
+    get_website_fetcher,
+    require_api_key,
+)
 from app.config import settings
-from app.llm import GroqClient, OpenRouterClient
+from app.llm import GroqClient, OpenAIClient, OpenRouterClient
 from app.orchestrator.runner import LeadNotFoundError, run_lead
 from app.schemas.runs import RunRead
 from app.tools.fetch import WebsiteFetcher
 from app.tools.search import SearchProvider
 
-router = APIRouter()
+router = APIRouter(dependencies=[Depends(require_api_key)])
 
 
 @router.post("/leads/{lead_id}/run", response_model=RunRead)
@@ -22,7 +28,7 @@ def run_lead_endpoint(
     session: Session = Depends(get_session),
     search: SearchProvider = Depends(get_search_provider),
     fetcher: WebsiteFetcher = Depends(get_website_fetcher),
-    llm: OpenRouterClient | GroqClient = Depends(get_llm_client),
+    llm: OpenRouterClient | GroqClient | OpenAIClient = Depends(get_llm_client),
 ) -> dict:
     try:
         return run_lead(
@@ -32,6 +38,7 @@ def run_lead_endpoint(
             fetcher,
             llm,
             max_results=settings.search_max_results,
+            tool_budget=settings.run_max_tool_calls,
         )
     except LeadNotFoundError:
         raise HTTPException(status_code=404, detail="lead_not_found")

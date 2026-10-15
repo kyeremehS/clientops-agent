@@ -1,21 +1,29 @@
 """Entrypoint. Wiring only — no business logic."""
 
 from contextlib import asynccontextmanager
+from pathlib import Path
 
+from alembic import command
+from alembic.config import Config
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.actions import router as actions_router
 from app.api.leads import router as leads_router
 from app.api.runs import router as runs_router
-from app.config import settings
-from app.db.base import Base, get_engine
+
+
+def _alembic_config() -> Config:
+    cfg = Config()
+    cfg.set_main_option("script_location", str(Path(__file__).resolve().parent.parent / "alembic"))
+    return cfg
 
 
 @asynccontextmanager
 async def lifespan(_: FastAPI):
-    # Slice 1: create tables on startup. Migrations (Alembic) come later.
-    Base.metadata.create_all(get_engine(settings.database_url))
+    # Migrations own the schema. Tests exercise this path too: TestClient
+    # startup runs these same migrations against the test database.
+    command.upgrade(_alembic_config(), "head")
     yield
 
 

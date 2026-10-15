@@ -11,7 +11,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.api.deps import get_session, get_slack_sender
+from app.api.deps import get_session, get_slack_sender, require_api_key
 from app.config import settings
 from app.db.events import append_audit_event
 from app.db.models import Action, Approval, Lead
@@ -19,7 +19,7 @@ from app.schemas.actions import ActionRead
 from app.schemas.common import ApprovalStatus
 from app.tools.slack import SlackError, SlackSender, format_qualification_message
 
-router = APIRouter()
+router = APIRouter(dependencies=[Depends(require_api_key)])
 
 
 def _idempotency_key(approval_id: UUID) -> str:

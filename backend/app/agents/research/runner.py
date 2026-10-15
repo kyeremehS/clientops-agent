@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 
 from app.agents.research.prompts import build_claim_queries, build_research_prompt
 from app.db.models import ResearchArtifact
-from app.llm import GroqClient, OpenRouterClient
+from app.llm import GroqClient, OpenAIClient, OpenRouterClient
 from app.policy.safety import GuardBlockedError
 from app.schemas.leads import LeadCreate
 from app.schemas.research import ResearchResult
@@ -20,7 +20,7 @@ def run_research(
     lead: LeadCreate,
     search: SearchProvider,
     fetcher: WebsiteFetcher,
-    llm: OpenRouterClient | GroqClient,
+    llm: OpenRouterClient | GroqClient | OpenAIClient,
     session: Session,
     max_results: int = 5,
     guard: Callable[[str, dict], str | None] | None = None,

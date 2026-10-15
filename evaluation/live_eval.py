@@ -116,7 +116,13 @@ def run_case(case: dict, search, fetcher, llm, max_results: int) -> dict:
         session.commit()
         try:
             summary = run_lead(
-                lead.id, session, search, fetcher, llm, max_results=max_results
+                lead.id,
+                session,
+                search,
+                fetcher,
+                llm,
+                max_results=max_results,
+                tool_budget=settings.run_max_tool_calls,
             )
         finally:
             artifact_urls = [

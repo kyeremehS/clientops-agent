@@ -72,3 +72,20 @@ def test_factory_selects_openai():
     assert isinstance(client, OpenAIClient) and client._model == "gpt-5-mini"
     with pytest.raises(LLMConfigError, match="unknown LLM_PROVIDER"):
         llm_client_from_settings(BadSettings())
+
+
+def test_factory_carries_token_budget():
+    """run_max_total_tokens flows from settings into every provider client."""
+
+    class BudgetSettings:
+        llm_provider = "openai"
+        llm_model = "gpt-5-mini"
+        openrouter_api_key = "ok"
+        openai_api_key = "ak"
+        groq_api_key = "gk"
+        llm_timeout_s = 5.0
+        llm_max_retries = 1
+        llm_max_tokens = 50
+        run_max_total_tokens = 5000
+
+    assert llm_client_from_settings(BudgetSettings())._max_total_tokens == 5000

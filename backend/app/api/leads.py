@@ -10,7 +10,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.api.deps import get_session
+from app.api.deps import get_session, require_api_key
 from app.db.events import (
     append_audit_event,
     create_approval,
@@ -21,7 +21,7 @@ from app.db.models import Approval, Lead
 from app.schemas.common import ApprovalStatus
 from app.schemas.leads import ApprovalRead, LeadCreate, LeadRead
 
-router = APIRouter()
+router = APIRouter(dependencies=[Depends(require_api_key)])
 
 
 def _get_lead_or_404(session: Session, lead_id: UUID) -> Lead:

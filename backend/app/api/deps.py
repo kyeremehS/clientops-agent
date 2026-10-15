@@ -2,11 +2,12 @@
 
 from collections.abc import Iterator
 
+from fastapi import Header, HTTPException
 from sqlalchemy.orm import Session
 
 from app.config import settings
 from app.db.base import get_session_factory
-from app.llm import GroqClient, OpenRouterClient, llm_client_from_settings
+from app.llm import GroqClient, OpenAIClient, OpenRouterClient, llm_client_from_settings
 from app.tools.fetch import WebsiteFetcher
 from app.tools.search import SearchProvider, create_search_provider
 from app.tools.slack import SlackSender
@@ -31,6 +32,12 @@ def get_session() -> Iterator[Session]:
         raise
     finally:
         session.close()
+
+
+def require_api_key(authorization: str | None = Header(default=None)) -> None:
+    """Shared-secret gate. Empty API_KEY means dev-open (localhost only)."""
+    if settings.api_key and authorization != f"Bearer {settings.api_key}":
+        raise HTTPException(status_code=401, detail="unauthorized")
 
 
 def get_slack_sender() -> SlackSender:
@@ -69,7 +76,7 @@ def get_website_fetcher() -> WebsiteFetcher:
     return _fetcher
 
 
-def get_llm_client() -> OpenRouterClient | GroqClient:
+def get_llm_client() -> OpenRouterClient | GroqClient | OpenAIClient:
     global _llm
     if _llm is None:
         _llm = llm_client_from_settings(settings)
