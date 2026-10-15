@@ -104,6 +104,42 @@ def test_execute_is_idempotent(wired):
     assert len(sender.calls) == 1  # never re-sent
 
 
+def test_execute_includes_fit_when_qualified(wired):
+    """Approver sees the score: a stored qualification surfaces as Fit: NN/100."""
+    from app.db.models import Qualification
+
+    client, sender, engine, approval = _approved(wired)
+    with Session(engine) as session:
+        session.add(
+            Qualification(
+                lead_id=UUID(approval["lead_id"]),
+                operational_pain=2,
+                automation_plausibility=2,
+                relevance=2,
+                evidence_quality=2,
+                supporting_evidence_ids=[],
+                summary="s",
+                score=66.67,
+            )
+        )
+        session.commit()
+
+    client.post(f"/approvals/{approval['id']}/execute")
+
+    _, text = sender.calls[0]
+    assert "Fit: 67/100" in text
+
+
+def test_execute_omits_fit_without_qualification(wired):
+    """No qualification row (e.g. manual approval) → message still sends cleanly."""
+    client, sender, engine, approval = _approved(wired)
+
+    client.post(f"/approvals/{approval['id']}/execute")
+
+    _, text = sender.calls[0]
+    assert "Fit:" not in text
+
+
 def test_execute_pending_is_409(wired):
     client, sender, _ = wired
     lead = client.post("/leads", json={"company": "Acme"}).json()

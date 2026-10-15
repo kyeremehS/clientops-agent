@@ -14,7 +14,7 @@ from sqlalchemy.orm import Session
 from app.api.deps import get_session, get_slack_sender, require_api_key
 from app.config import settings
 from app.db.events import append_audit_event
-from app.db.models import Action, Approval, Lead
+from app.db.models import Action, Approval, Lead, Qualification
 from app.schemas.actions import ActionRead
 from app.schemas.common import ApprovalStatus
 from app.tools.slack import SlackError, SlackSender, format_qualification_message
@@ -46,7 +46,13 @@ def execute_approval(
     lead = session.get(Lead, approval.lead_id)
     if lead is None:  # pragma: no cover — defensive; lead outlives approvals
         raise HTTPException(status_code=404, detail="lead_not_found")
-    text = format_qualification_message(lead.company, lead.website, lead.contact, lead.message)
+    qualification = session.scalar(
+        select(Qualification).where(Qualification.lead_id == lead.id)
+    )
+    fit = qualification.score if qualification is not None else None
+    text = format_qualification_message(
+        lead.company, lead.website, lead.contact, lead.message, fit_score=fit
+    )
 
     append_audit_event(session, lead.id, "action.started", payload={"channel": "slack"})
     try:
