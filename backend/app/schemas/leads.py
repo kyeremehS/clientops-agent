@@ -31,3 +31,34 @@ class ApprovalRead(BaseModel):
     requested_at: datetime
     expires_at: datetime
     decided_at: datetime | None
+
+
+class ArtifactRead(BaseModel):
+    id: UUID
+    source_url: str
+    excerpt: str
+    content_hash: str
+
+
+class QualificationRead(BaseModel):
+    operational_pain: int
+    automation_plausibility: int
+    relevance: int
+    evidence_quality: int
+    supporting_evidence_ids: list[str]
+    summary: str
+    score: float
+
+
+class DecisionRead(BaseModel):
+    outcome: str
+    reasons: list[str]
+
+
+class LeadDetailRead(BaseModel):
+    lead: LeadRead
+    state: str
+    artifacts: list[ArtifactRead] = []
+    qualification: QualificationRead | None = None
+    decision: DecisionRead | None = None
+    approval: ApprovalRead | None = None

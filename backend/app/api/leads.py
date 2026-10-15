@@ -17,9 +17,18 @@ from app.db.events import (
     is_approval_expired,
     utcnow,
 )
-from app.db.models import Approval, Lead
+from app.db.models import Approval, Decision, Lead, Qualification, ResearchArtifact
+from app.orchestrator.states import lead_state
 from app.schemas.common import ApprovalStatus
-from app.schemas.leads import ApprovalRead, LeadCreate, LeadRead
+from app.schemas.leads import (
+    ApprovalRead,
+    ArtifactRead,
+    DecisionRead,
+    LeadCreate,
+    LeadDetailRead,
+    LeadRead,
+    QualificationRead,
+)
 
 router = APIRouter(dependencies=[Depends(require_api_key)])
 
@@ -64,6 +73,57 @@ def create_lead(payload: LeadCreate, session: Session = Depends(get_session)) ->
 @router.get("/leads/{lead_id}", response_model=LeadRead)
 def get_lead(lead_id: UUID, session: Session = Depends(get_session)) -> Lead:
     return _get_lead_or_404(session, lead_id)
+
+
+_EXCERPT_CHARS = 500
+
+
+@router.get("/leads/{lead_id}/detail", response_model=LeadDetailRead)
+def get_lead_detail(lead_id: UUID, session: Session = Depends(get_session)) -> dict:
+    """One lead's full story: research, ratings, verdict, approval, state."""
+    lead = _get_lead_or_404(session, lead_id)
+    artifacts = list(
+        session.scalars(
+            select(ResearchArtifact).where(ResearchArtifact.lead_id == lead_id)
+        )
+    )
+    qualification = session.scalar(
+        select(Qualification).where(Qualification.lead_id == lead_id)
+    )
+    decision = session.scalar(select(Decision).where(Decision.lead_id == lead_id))
+    approval = session.scalar(select(Approval).where(Approval.lead_id == lead_id))
+    return {
+        "lead": lead,
+        "state": lead_state(session, lead_id),
+        "artifacts": [
+            {
+                "id": art.id,
+                "source_url": art.source_url,
+                "excerpt": art.content[:_EXCERPT_CHARS],
+                "content_hash": art.content_hash,
+            }
+            for art in artifacts
+        ],
+        "qualification": (
+            {
+                "operational_pain": qualification.operational_pain,
+                "automation_plausibility": qualification.automation_plausibility,
+                "relevance": qualification.relevance,
+                "evidence_quality": qualification.evidence_quality,
+                "supporting_evidence_ids": qualification.supporting_evidence_ids,
+                "summary": qualification.summary,
+                "score": qualification.score,
+            }
+            if qualification is not None
+            else None
+        ),
+        "decision": (
+            {"outcome": decision.outcome, "reasons": decision.reasons}
+            if decision is not None
+            else None
+        ),
+        "approval": approval,
+    }
 
 
 @router.get("/approvals/pending", response_model=list[ApprovalRead])
