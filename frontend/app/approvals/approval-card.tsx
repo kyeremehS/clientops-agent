@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import { api, type Approval } from "../../lib/api";
 
@@ -24,6 +25,9 @@ export default function ApprovalCard({ approval }: { approval: Approval }) {
         <strong>Approval</strong> {approval.id}
       </div>
       <div>Lead {approval.lead_id}</div>
+      <div>
+        <Link href={`/leads/${approval.lead_id}`}>View lead detail</Link>
+      </div>
       <div>Status: {status}</div>
       <div>Expires: {new Date(approval.expires_at).toISOString()}</div>
       {!decided && (

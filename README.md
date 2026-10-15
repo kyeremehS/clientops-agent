@@ -33,6 +33,21 @@ python -m pytest backend/tests -q
 Backend runs from `backend/`: `uvicorn app.main:app --reload`.
 Frontend runs from `frontend/`: `pnpm install; pnpm dev`.
 
+## Demo (5 minutes, uses live search + AI — costs cents)
+
+With backend, database, and frontend running:
+
+1. Open the API docs at `http://localhost:8000/docs`.
+2. `POST /leads` — company "Flexport", website, and a message about a
+   growing support queue. Copy the returned lead id.
+3. `POST /leads/{id}/run` — watch it research, rate, and reach a verdict.
+   Returns the outcome, fit score, and (for REVIEW) an approval id.
+4. Open `http://localhost:3000/approvals` — approve the pending item.
+5. `POST /approvals/{id}/execute` — the message posts to #sales-leads.
+   Run it twice: one message total, never two.
+6. Open `http://localhost:3000/leads/{id}` — the lead's full story:
+   sources, ratings, verdict, approval state.
+
 ## Safety rules
 
 - AI proposes, code disposes, humans authorize. No automatic external action.
